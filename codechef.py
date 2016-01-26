@@ -18,16 +18,12 @@ import zlib
 import logging
 
 # To convert text into 'key' format: i.e. "About me" becomes 'about_me'
-
-
 def convertToKey(token):
     return token.lower().replace(' ', '_')
 
 #
 #	Helper function to parse the list of complete and partial problems.
 #
-
-
 def parseProblems(problemsC):
     problemDict = {}
 
@@ -47,11 +43,9 @@ def parseProblems(problemsC):
 # TODO : Try to parse the SVG image of the rating curve, to extract all data about the contest rating at any time.
 # REFACTOR : Split all the parsing methods into seperate, for easy debugging.
 
-
 def getUserDataFromNet(username,
                 updatePageTime=0,
                 dumpToJSON=False,
-                JSONFileName=None,
                 JSONFileReadable=False,
                 debug=False):
     # Dictionary returning all the scraped data from the HTML.
@@ -100,7 +94,7 @@ def getUserDataFromNet(username,
     #
     problemsPartial = row.findNext('tr').td.findNext('td').findAll('p')
     partialProblemDict = OrderedDict()
-    attributes.update({'partial_problem': parseProblems(problemsComplete)})
+    attributes.update({'partial_problem': parseProblems(problemsPartial)})
 
     #
     #	Parsing the problem_stats table to get the number of submissions, WA, RTE, and the stuff.
@@ -134,33 +128,35 @@ def getUserDataFromNet(username,
     attributes.update( {'rating_table': ratingList } )
     # print ratingList
 
+    """
+        TODO: Create a seperate method to dump JSON to file, 
+              as contest parsing also needs JSON dumping.
+    """
     #
     #  Utility to dump the parsed 'attributes' dict in a JSON file for readability/compression.
     #
     if (dumpToJSON):
-        if (debug):
-            print "Dumping 'attributes' dict into a JSON file."
-
-        # If no name for JSON file is passed, name the file as the username.
-        if (JSONFileName is None):
-            JSONFileName = username
-
-        # JSON file should not be compressed.
         if (JSONFileReadable):
-            with open(JSONFileName + '.json', 'w') as alp:
-                alp.write(json.dumps(attributes, indent=4))
+            putDataInFile(username, attributes, compressed=False)
         else:
-            #Compressed JSON files to be denoted by cjson
-            with open(JSONFileName + '.cjson', 'wb') as alp:
-                # Use zlib library to compress JSON.
-                alp.write(zlib.compress(json.dumps(attributes, indent=0)))
+            putDataInFile(username, attributes, compressed=True)
 
     return attributes
 
+def putDataInFile (username, attributes, compressed=False):
+    if (not compressed):
+        with open(username + '.json', 'w') as alp:
+            alp.write(json.dumps(attributes, indent=4))
+    else:
+        #Compressed JSON files to be denoted by cjson
+        with open(username + '.cjson', 'wb') as alp:
+        # Use zlib library to compress JSON.
+            alp.write(zlib.compress(json.dumps(attributes, indent=0)))
+
 """
-    getUserDataFromFile() returns the 'attributes' from a .json or a .cjson file.
+    getDataFromFile() returns the data from a .json or a .cjson file.
 """
-def getUserDataFromFile (filename):
+def getDataFromFile (filename):
 
     attributes = OrderedDict()
     
@@ -177,11 +173,46 @@ def getUserDataFromFile (filename):
     return attributes
 
 """
+    getContestListFromNet() parses all the contests from codechef.com/contests
+"""
+def getContestListFromNet(forceDownload=False, dumpToJSON=False):
+
+    downloadPage('contests',0)
+    
+    soup = BeautifulSoup(open(".codechef/contests").read())
+    #print soup
+
+    contest_data = {}
+
+    table_list = soup.findAll('div', { 'class' : 'table-questions'})
+    for table in table_list[0:2]:
+        rows = table.table.findAll('tr')
+        #Skipping the first row, which contains the titles.
+        for row in rows[1:]:
+            row = row.findAll('td')
+            temp_data = []
+            #The first td here contains the contest code, which we use to make the key.
+            for td in row[1:]:
+                temp_data.append(td.text)
+            contest_data.update( { row[0].text : temp_data } )
+
+    if (dumpToJSON):
+        putDataInFile('contests',contest_data,compressed=False)
+
+    return contest_data
+
+"""
 	downloadPage() method downloads the respective HTML file, and returns the error code.
+    Use it for webpages which need to be updated regularly.
+    For one time downloads, use the plain requests library.
 """
 def downloadPage(username, time_out_time=0):
-    file_path = ".codechef/" + username
-    url_path = "http://www.codechef.com/users/" + username
+    if (username == 'contests'):
+        file_path = ".codechef/contests"
+        url_path = "http://www.codechef.com/contests"
+    else:
+        file_path = ".codechef/" + username
+        url_path = "http://www.codechef.com/users/" + username
 
     # Check if .codechef is there. If not, create it.
     if (not os.path.exists(".codechef")):
@@ -217,7 +248,11 @@ def downloadPage(username, time_out_time=0):
         # Else, 2 redirections. Hence, we invalidate >= 2 requests.
         request = requests.Session()
         request.max_redirects = 1
+        
+        if (username == 'contests'):
+            request.max_redirects = 2
 
+        print request.max_redirects
         try:
             web_page = request.get(url_path).text
         except requests.TooManyRedirects:
