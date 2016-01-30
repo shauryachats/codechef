@@ -3,7 +3,6 @@ import re
 import json
 from utils import downloadPage, convertToKey
 
-
 """
     Scraps problem metadata from the problem data.
     DOES NOT PARSE THE PROBLEM STATEMENT

@@ -10,7 +10,7 @@ from BeautifulSoup import BeautifulSoup
     Downloads the respective HTML file, checks if the page hasn't timed out,
     and returns the BeautifulSoup object of the webpage.
 """
-def downloadPage(username, time_out_time=0, isProblem = False):
+def downloadPage(username, timeOutTime=0, isProblem = False):
     file_path = ".codechef/"
     url_path = "http://www.codechef.com/" 
 
@@ -32,7 +32,7 @@ def downloadPage(username, time_out_time=0, isProblem = False):
         file_path += "user/" + username
         url_path += "users/" + username
 
-    # Check if .codechef is there. If not, create it.
+    # Create the paths, if not already present.
     pathsToCreate = ['.codechef', '.codechef/contest', '.codechef/problem', '.codechef/user']
     for path in pathsToCreate:
         if (not os.path.exists(path)):
@@ -41,7 +41,7 @@ def downloadPage(username, time_out_time=0, isProblem = False):
 
     # Check if the webpage is there.
     # If not, download.
-    # If yes, check for the time_out_time and if time_diff > time_out_time, redownload.
+    # If yes, check for the timeOutTime and if time_diff > timeOutTime, redownload.
     # Else, do nothing.
 
     download_page = False
@@ -55,7 +55,7 @@ def downloadPage(username, time_out_time=0, isProblem = False):
             os.path.getmtime(file_path))
         time_difference = datetime.datetime.now() - downloaded_time
 
-        if (int(time_difference.seconds) > time_out_time):
+        if (int(time_difference.seconds) > timeOutTime):
             os.remove(file_path)
             download_page = True
             print "Downloaded page is expired. Redownloading..."
