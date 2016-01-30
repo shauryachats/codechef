@@ -6,20 +6,71 @@
    Author: Shaurya Chaturvedi
            shauryachats@gmail.com
 
+
+    TODO: Create a tester program, which can check if each method is working perfectly or not.
 """
 
-import requests
 from BeautifulSoup import BeautifulSoup
 import os
-import datetime
 from collections import OrderedDict
 import json
-import zlib
 import logging
+import re
 
-# To convert text into 'key' format: i.e. "About me" becomes 'about_me'
-def convertToKey(token):
-    return token.lower().replace(' ', '_')
+from utils import downloadPage, putDataInFile, getDataFromFile
+from problem import getProblemData
+
+"""
+    
+"""
+
+class User:
+
+    def __init__(self, username, timeOutTime = 0):
+        self.username = username
+        self.realName = None
+        self.country = None
+        self.institution = None
+        #A dict of 'Contest'
+        self.completeProblems = None
+        #A dict of 'Contest'
+        self.partialProblems = None
+
+        self.timeOutTime = timeOutTime
+
+    def fetch(self):
+        attributes = getUserData(self.username, self.timeOutTime)
+
+        self.username = attributes['username']
+        self.realName = attributes['real_name']
+        self.country = attributes['country']
+        self.institution = attributes['institution']
+
+        self.completeProblems = attributes['complete_problem']
+        self.partialProblems = attributes['partial_problem']
+
+    def __repr__(self):
+        pass
+
+class Contest:
+
+    def __init__(self, contestCode):
+        self.contestCode = contestCode
+        self.problemList = []
+
+    def fetch(self):
+        pass
+
+class Problem:
+
+    def __init__(self, problemCode):
+        self.problemCode = problemCode
+        self.attributes = {}
+
+    def fetch(self):
+        pass
+
+
 
 #
 #	Helper function to parse the list of complete and partial problems.
@@ -40,10 +91,11 @@ def parseProblems(problemsC):
 	getUserDataFromNet() does all the dirty work of parsing the HTML and junxing it altogether
 	in a crude 'attributes' dict.
 """
+
 # TODO : Try to parse the SVG image of the rating curve, to extract all data about the contest rating at any time.
 # REFACTOR : Split all the parsing methods into seperate, for easy debugging.
 
-def getUserDataFromNet(username,
+def getUserData(username,
                 updatePageTime=0,
                 dumpToJSON=False,
                 JSONFileReadable=False,
@@ -99,8 +151,7 @@ def getUserDataFromNet(username,
     #
     #	Parsing the problem_stats table to get the number of submissions, WA, RTE, and the stuff.
     #
-    problemStats = soup.find(
-        "table", id="problem_stats").tr.findNext('tr').findAll('td')
+    problemStats = soup.find("table", id="problem_stats").tr.findNext('tr').findAll('td')
     problemStats = [item.text for item in problemStats]
     stats = {}
     keys = ['prob_complete', 'prob_partial', 'prob_submit',
@@ -124,16 +175,10 @@ def getUserDataFromNet(username,
             parsedText = "0/0"
         parsedText = parsedText.split('/')
         ratingList.update( { keys[i]: [ parsedText[0], parsedText[1], tr[1].text.replace('&nbsp;(?)', '') ] } )
-    # print ratingList
     attributes.update( {'rating_table': ratingList } )
-    # print ratingList
 
-    """
-        TODO: Create a seperate method to dump JSON to file, 
-              as contest parsing also needs JSON dumping.
-    """
     #
-    #  Utility to dump the parsed 'attributes' dict in a JSON file for readability/compression.
+    #  Dumping the attributes into a JSON as requested.
     #
     if (dumpToJSON):
         if (JSONFileReadable):
@@ -143,42 +188,14 @@ def getUserDataFromNet(username,
 
     return attributes
 
-def putDataInFile (username, attributes, compressed=False):
-    if (not compressed):
-        with open(username + '.json', 'w') as alp:
-            alp.write(json.dumps(attributes, indent=4))
-    else:
-        #Compressed JSON files to be denoted by cjson
-        with open(username + '.cjson', 'wb') as alp:
-        # Use zlib library to compress JSON.
-            alp.write(zlib.compress(json.dumps(attributes, indent=0)))
-
 """
-    getDataFromFile() returns the data from a .json or a .cjson file.
+    getContestList() parses all the contests from codechef.com/contests
 """
-def getDataFromFile (filename):
+def getContestList(updatePageTime = 0, dumpToJSON=False):
 
-    attributes = OrderedDict()
-    
-    #If the JSON file is compressed,
-    if (filename.endswith('.cjson')): 
-        with open(filename, 'rb') as alp:
-            attributes = json.loads(zlib.decompress(alp.read()))
-    elif (filename.endswith('.json')):
-        with open(filename, 'r') as alp:
-            attributes = json.loads(alp.read())
-    else:
-        raise IOError('Invalid file type.')
-
-    return attributes
-
-"""
-    getContestListFromNet() parses all the contests from codechef.com/contests
-"""
-def getContestListFromNet(forceDownload=False, dumpToJSON=False):
-
-    downloadPage('contests',0)
-    
+    downloadPage('contests',updatePageTime)
+    import sys
+    sys.exit(0)
     soup = BeautifulSoup(open(".codechef/contests").read())
     #print soup
 
@@ -201,68 +218,23 @@ def getContestListFromNet(forceDownload=False, dumpToJSON=False):
 
     return contest_data
 
-"""
-	downloadPage() method downloads the respective HTML file, and returns the error code.
-    Use it for webpages which need to be updated regularly.
-    For one time downloads, use the plain requests library.
-"""
-def downloadPage(username, time_out_time=0):
-    if (username == 'contests'):
-        file_path = ".codechef/contests"
-        url_path = "http://www.codechef.com/contests"
-    else:
-        file_path = ".codechef/" + username
-        url_path = "http://www.codechef.com/users/" + username
+def getContestData(contestCode):
+    downloadPage(contestCode, 15000)
+    with open('.codechef/contest/' + contest_code, "r") as alp:
+        soup = BeautifulSoup(alp.read())
 
-    # Check if .codechef is there. If not, create it.
-    if (not os.path.exists(".codechef")):
-        os.makedirs(".codechef")
+    dataTable = soup.find('table', { 'class' : 'problems'} )
+    problemRow = dataTable.findAll('tr', { 'class' : 'problemrow'})
+    
+    problemList = {}
 
-    # Check if the webpage is there.
-    # If not, download.
-    # If yes, check for the time_out_time and if time_diff > time_out_time, redownload.
-    # Else, do nothing.
+    for problem in problemRow:
+        problem = problem.findAll('td')
+        tempList = []
+        for items in problem[2:]:
+            tempList.append(items.text)
+        problemList.update( { problem[1].text : tempList } )
 
-    download_page = False
+    print json.dumps(problemList,indent=4)
 
-    if (not os.path.exists(file_path)):
-        download_page = True
-        print "Page does not exist. Downloading..."
-
-    else:
-        downloaded_time = datetime.datetime.fromtimestamp(
-            os.path.getmtime(file_path))
-        time_difference = datetime.datetime.now() - downloaded_time
-
-        if (int(time_difference.seconds) > time_out_time):
-            os.remove(file_path)
-            download_page = True
-            print "Downloaded page is expired. Redownloading..."
-
-        else:
-            return "ALREADY_DOWNLOADED"
-
-    if (download_page == True):
-
-        # If username exists, only 1 redirection will follow.
-        # Else, 2 redirections. Hence, we invalidate >= 2 requests.
-        request = requests.Session()
-        request.max_redirects = 1
-        
-        if (username == 'contests'):
-            request.max_redirects = 2
-
-        print request.max_redirects
-        try:
-            web_page = request.get(url_path).text
-        except requests.TooManyRedirects:
-            raise Exception('Username not found.')
-        # When the network is down i.e. WiFi is not connected or bleh.
-        except IOError:
-            raise Exception('Cannot connect to codechef.com')
-
-        # If correct user's page is downloaded, save it to the page.
-        page = open(file_path, "wb")
-        page.write(web_page)
-        page.close()
-        return "SUCCESS"
+    return problemList
