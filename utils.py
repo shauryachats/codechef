@@ -3,11 +3,12 @@ import requests
 import datetime
 import json
 import zlib
+from collections import OrderedDict
+from BeautifulSoup import BeautifulSoup
 
 """
-    Downloads the respective HTML file, checks if the page hasn't timed out, and returns the error code.
-    
-    TODO: Return a BeautifulSoup of the webpage.
+    Downloads the respective HTML file, checks if the page hasn't timed out,
+    and returns the BeautifulSoup object of the webpage.
 """
 def downloadPage(username, time_out_time=0, isProblem = False):
     file_path = ".codechef/"
@@ -59,9 +60,6 @@ def downloadPage(username, time_out_time=0, isProblem = False):
             download_page = True
             print "Downloaded page is expired. Redownloading..."
 
-        else:
-            return "ALREADY_DOWNLOADED"
-
     if (download_page == True):
 
         # If username exists, only 1 redirection will follow.
@@ -85,7 +83,7 @@ def downloadPage(username, time_out_time=0, isProblem = False):
         page.write(web_page.encode('utf-8').strip())
         page.close()
 
-        return "SUCCESS"
+    return BeautifulSoup(open(file_path).read())
 
 
 """
@@ -123,8 +121,11 @@ def getDataFromFile (filename):
     return attributes
 
 
+"""
+    Converts text into 'key' format: i.e. "About me" becomes 'about_me'
 
-# To convert text into 'key' format: i.e. "About me" becomes 'about_me'
+    It replaces spaces with underscore and strips all the non alphanumeric characters.
+"""
 def convertToKey(token):
     temp = token.lower().replace(' ', '_')
     return ''.join(ch for ch in temp if ch.isalnum() or ch == '_')

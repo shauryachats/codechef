@@ -10,14 +10,11 @@ from utils import downloadPage, convertToKey
 
     To parse the problem statement, use getProblemStatement()
 """
-def getProblemData(problemCode):
+def getProblemData(problem):
     attributes = {}
 
-    downloadPage(problemCode, 99999, isProblem = True)
+    soup = downloadPage(problem.problemCode, problem.timeOutTime, isProblem = True)
     
-    with open('.codechef/problem/' + problemCode) as alp:
-        soup = BeautifulSoup(alp.read())
-
     title = soup.find('h1')
                                     #Removed uneven spacing in the title.
     attributes.update( { 'title' : re.sub(' +', ' ', title.contents[0])[:-1] } )
@@ -25,6 +22,7 @@ def getProblemData(problemCode):
     #Find the details table.
     table = soup.find('table', {'align' : 'left'} )
     table = table.findAll('tr')
+    
     for tr in table:
         tr = tr.findAll('td')
         key = convertToKey(tr[0].text)
@@ -39,6 +37,6 @@ def getProblemData(problemCode):
         else:
             attributes.update( { key : tr[1].text } )
     
-    print json.dumps(attributes, indent=4)
+    #print json.dumps(attributes, indent=4)
     return attributes
 

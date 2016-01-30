@@ -17,8 +17,9 @@ import json
 import logging
 import re
 
-from utils import downloadPage, putDataInFile, getDataFromFile
+from utils import downloadPage, putDataInFile, getDataFromFile, convertToKey
 from problem import getProblemData
+from contest import getContestList, getContestData
 
 """
     
@@ -54,23 +55,30 @@ class User:
 
 class Contest:
 
-    def __init__(self, contestCode):
+    def __init__(self, contestCode, timeOutTime = 0):
         self.contestCode = contestCode
         self.problemList = []
-
+        self.timeOutTime = timeOutTime
+    
     def fetch(self):
         pass
 
 class Problem:
 
-    def __init__(self, problemCode):
+    def __init__(self, problemCode, timeOutTime = 0, getProblemStatement = False):
         self.problemCode = problemCode
         self.attributes = {}
+        self.timeOutTime = timeOutTime
+        self.getProblemStatement = getProblemStatement
+        self.problemStatement = None
 
     def fetch(self):
-        pass
+        self.attributes = getProblemData(self)
+        if (self.getProblemStatement):
+            attributes.update( {'problem_statement' : getProblemStatement(self) } )
 
-
+    def __repr__(self):
+        return "<%s instance with problemCode:%s , timeOutTime:%s>" % (self.__class__, self.problemCode, self.timeOutTime)
 
 #
 #	Helper function to parse the list of complete and partial problems.
@@ -95,17 +103,11 @@ def parseProblems(problemsC):
 # TODO : Try to parse the SVG image of the rating curve, to extract all data about the contest rating at any time.
 # REFACTOR : Split all the parsing methods into seperate, for easy debugging.
 
-def getUserData(username,
-                updatePageTime=0,
-                dumpToJSON=False,
-                JSONFileReadable=False,
-                debug=False):
+def getUserData(username , timeOutTime=0):
     # Dictionary returning all the scraped data from the HTML.
     attributes = OrderedDict()
 
-    downloadPage(username, updatePageTime)
-
-    soup = BeautifulSoup(open(".codechef/" + username, "r").read())
+    soup = downloadPage(username, timeOutTime)
 
     # The profile_tab contains all the data about the user.
     profileTab = soup.find("div", {'class': "profile"})
@@ -175,66 +177,7 @@ def getUserData(username,
             parsedText = "0/0"
         parsedText = parsedText.split('/')
         ratingList.update( { keys[i]: [ parsedText[0], parsedText[1], tr[1].text.replace('&nbsp;(?)', '') ] } )
+    
     attributes.update( {'rating_table': ratingList } )
 
-    #
-    #  Dumping the attributes into a JSON as requested.
-    #
-    if (dumpToJSON):
-        if (JSONFileReadable):
-            putDataInFile(username, attributes, compressed=False)
-        else:
-            putDataInFile(username, attributes, compressed=True)
-
     return attributes
-
-"""
-    getContestList() parses all the contests from codechef.com/contests
-"""
-def getContestList(updatePageTime = 0, dumpToJSON=False):
-
-    downloadPage('contests',updatePageTime)
-    import sys
-    sys.exit(0)
-    soup = BeautifulSoup(open(".codechef/contests").read())
-    #print soup
-
-    contest_data = {}
-
-    table_list = soup.findAll('div', { 'class' : 'table-questions'})
-    for table in table_list[0:2]:
-        rows = table.table.findAll('tr')
-        #Skipping the first row, which contains the titles.
-        for row in rows[1:]:
-            row = row.findAll('td')
-            temp_data = []
-            #The first td here contains the contest code, which we use to make the key.
-            for td in row[1:]:
-                temp_data.append(td.text)
-            contest_data.update( { row[0].text : temp_data } )
-
-    if (dumpToJSON):
-        putDataInFile('contests',contest_data,compressed=False)
-
-    return contest_data
-
-def getContestData(contestCode):
-    downloadPage(contestCode, 15000)
-    with open('.codechef/contest/' + contest_code, "r") as alp:
-        soup = BeautifulSoup(alp.read())
-
-    dataTable = soup.find('table', { 'class' : 'problems'} )
-    problemRow = dataTable.findAll('tr', { 'class' : 'problemrow'})
-    
-    problemList = {}
-
-    for problem in problemRow:
-        problem = problem.findAll('td')
-        tempList = []
-        for items in problem[2:]:
-            tempList.append(items.text)
-        problemList.update( { problem[1].text : tempList } )
-
-    print json.dumps(problemList,indent=4)
-
-    return problemList
