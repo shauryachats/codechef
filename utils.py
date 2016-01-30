@@ -10,27 +10,24 @@ from BeautifulSoup import BeautifulSoup
     Downloads the respective HTML file, checks if the page hasn't timed out,
     and returns the BeautifulSoup object of the webpage.
 """
-def downloadPage(username, timeOutTime=0, isProblem = False):
-    file_path = ".codechef/"
-    url_path = "http://www.codechef.com/" 
+def downloadPage(username, timeOutTime=0, isProblem = False, isContest = False):
+    filePath = ".codechef/"
+    urlPath = "http://www.codechef.com/" 
 
+    #Only the contest list uses the "username" contests.
     if (username == 'contests'):
-        file_path += "contests"
-        url_path += "contests"
-    #Uppercase strings are considered to be problem codes as well as contest codes.
-    elif (username.isupper()):
-        #if the code is a problem code.
-        if isProblem:
-            file_path += "problem/" + username
-            url_path += "problems/" + username
+        filePath += "contests"
+        urlPath += "contests"
+    elif (isProblem):
+        filePath += "problem/" + username
+        urlPath += "problems/" + username
         #else the code is a contest code.
-        else:
-            file_path += "contest/" + username
-            url_path += username
-    #The username is a user's.
+    elif (isContest):
+        filePath += "contest/" + username
+        urlPath += username
     else:
-        file_path += "user/" + username
-        url_path += "users/" + username
+        filePath += "user/" + username
+        urlPath += "users/" + username
 
     # Create the paths, if not already present.
     pathsToCreate = ['.codechef', '.codechef/contest', '.codechef/problem', '.codechef/user']
@@ -44,23 +41,22 @@ def downloadPage(username, timeOutTime=0, isProblem = False):
     # If yes, check for the timeOutTime and if time_diff > timeOutTime, redownload.
     # Else, do nothing.
 
-    download_page = False
+    shouldWeDownloadPage = False
 
-    if (not os.path.exists(file_path)):
-        download_page = True
+    if (not os.path.exists(filePath)):
+        shouldWeDownloadPage = True
         print "Page does not exist. Downloading..."
 
     else:
-        downloaded_time = datetime.datetime.fromtimestamp(
-            os.path.getmtime(file_path))
-        time_difference = datetime.datetime.now() - downloaded_time
+        downloadedTime = datetime.datetime.fromtimestamp(os.path.getmtime(filePath))
+        timeDifference = datetime.datetime.now() - downloadedTime
 
-        if (int(time_difference.seconds) > timeOutTime):
-            os.remove(file_path)
-            download_page = True
+        if (int(timeDifference.seconds) > timeOutTime):
+            os.remove(filePath)
+            shouldWeDownloadPage = True
             print "Downloaded page is expired. Redownloading..."
 
-    if (download_page == True):
+    if (shouldWeDownloadPage == True):
 
         # If username exists, only 1 redirection will follow.
         # Else, 2 redirections. Hence, we invalidate >= 2 requests.
@@ -71,7 +67,7 @@ def downloadPage(username, timeOutTime=0, isProblem = False):
             request.max_redirects = 2
 
         try:
-            web_page = request.get(url_path).text
+            web_page = request.get(urlPath).text
         except requests.TooManyRedirects:
             raise Exception('Username not found.')
         # When the network is down i.e. WiFi is not connected or bleh.
@@ -79,11 +75,11 @@ def downloadPage(username, timeOutTime=0, isProblem = False):
             raise Exception('Cannot connect to codechef.com')
 
         # If correct user's page is downloaded, save it to the page.
-        page = open(file_path, "wb")
+        page = open(filePath, "wb")
         page.write(web_page.encode('utf-8').strip())
         page.close()
 
-    return BeautifulSoup(open(file_path).read())
+    return BeautifulSoup(open(filePath).read())
 
 
 """

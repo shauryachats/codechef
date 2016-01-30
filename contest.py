@@ -2,7 +2,6 @@ from utils import downloadPage, putDataInFile
 import json
 from BeautifulSoup import BeautifulSoup
 
-
 """
     getContestList() parses all the contests from codechef.com/contests
 
@@ -15,7 +14,7 @@ def getContestList(findContest = None, timeOutTime = 0):
     contestData = {}
 
     tableList = soup.findAll('div', { 'class' : 'table-questions'})
-    for table in tableList[0:2]:
+    for table in tableList:
         rows = table.table.findAll('tr')
         #Skipping the first row, which contains the titles.
         for row in rows[1:]:
@@ -71,7 +70,6 @@ def getContestData(contestCode, timeOutTime = 0):
     #   Checking if the contest is a Team Contest or not.
     #   Using the naive assumption that "Team Registration Link" appears only in a team contest.
     #
-
     if (len(soup.body.findAll(text='Team Registration Link')) > 0):
         attributes['team'] = True
     else:

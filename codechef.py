@@ -26,8 +26,6 @@ from contest import getContestList, getContestData
     
 """
 
-
-
 class User:
 
     def __init__(self, username, timeOutTime = 0):
@@ -66,6 +64,9 @@ class Contest:
     def fetch(self):
         pass
 
+"""
+    The Problem class denotes
+"""
 class Problem:
 
     def __init__(self, problemCode, timeOutTime = 0, getProblemStatement = False):
@@ -84,7 +85,7 @@ class Problem:
         return "<%s instance with problemCode:%s , timeOutTime:%s>" % (self.__class__, self.problemCode, self.timeOutTime)
 
 #
-#	Helper function to parse the list of complete and partial problems.
+#	Helper function for getUserData() to parse the list of complete and partial problems.
 #
 def parseProblems(problemsC):
     problemDict = {}
@@ -114,12 +115,11 @@ def getUserData(username , timeOutTime=0):
 
     # The profile_tab contains all the data about the user.
     profileTab = soup.find("div", {'class': "profile"})
-    # print profileTab
+
     attributes.update(
         {"real_name": profileTab.table.text.replace("&nbsp;", '')})
 
     row = profileTab.table.findNext("table").tr
-    # print mainDataTable
 
     #
     #	Parsing the personal data of the user.
