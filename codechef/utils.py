@@ -10,7 +10,7 @@ from BeautifulSoup import BeautifulSoup
     Downloads the respective HTML file, checks if the page hasn't timed out,
     and returns the BeautifulSoup object of the webpage.
 """
-def downloadPage(username, timeOutTime=0, isProblem = False, isContest = False):
+def downloadPage(username, timeOutTime=0, isProblem = False, isContest = False, isUser = False):
     filePath = ".codechef/"
     urlPath = "http://www.codechef.com/" 
 
@@ -25,7 +25,7 @@ def downloadPage(username, timeOutTime=0, isProblem = False, isContest = False):
     elif (isContest):
         filePath += "contest/" + username
         urlPath += username
-    else:
+    elif (isUser):
         filePath += "user/" + username
         urlPath += "users/" + username
 
@@ -57,26 +57,69 @@ def downloadPage(username, timeOutTime=0, isProblem = False, isContest = False):
             print "Downloaded page is expired. Redownloading..."
 
     if (shouldWeDownloadPage == True):
-
-        # If username exists, only 1 redirection will follow.
-        # Else, 2 redirections. Hence, we invalidate >= 2 requests.
-        request = requests.Session()
-        request.max_redirects = 1
         
-        if (username == 'contests'):
-            request.max_redirects = 2
+        web_page = None
 
-        try:
-            web_page = request.get(urlPath).text
-        except requests.TooManyRedirects:
-            raise Exception('Username not found.')
-        # When the network is down i.e. WiFi is not connected or bleh.
-        except IOError:
-            raise Exception('Cannot connect to codechef.com')
+        #
+        #   For usernames,
+        #   correct usernames take only one redirection.
+        #   wrong usernames take two redirections. 
+        #   Hence, we invalidate all >= 2 redirections.
+        #
+        if (isUser):
+            try:
+                web_page = requests.get(urlPath)
+            except IOError:
+                raise IOError('Cannot connect to codechef.com')
+
+            if len(web_page.history) > 1:
+                raise Exception('Username not found.')
+
+        #
+        #   For contest list,
+        #   it takes only one redirection.
+        #   so we raise an Exception if the status code is not 200 OK.
+        #
+        elif (username == 'contests'):
+            try:
+                web_page = requests.get(urlPath)
+            except IOError:
+                raise IOError('Cannot connect to codechef.com')
+
+            if (web_page.status_code != 200):
+                raise Exception('Status Error Code : ' + web_page.status_code)
+        #
+        #   For problems,
+        #   correct problems take only one redirection.
+        #   wrong problems take two redirections.
+        #   Hence we invalidate >= 2 redirections.
+        #
+        elif (isProblem):
+            try:
+                web_page = requests.get(urlPath)
+            except IOError:
+                raise IOError('Cannot connect to codechef.com')
+
+            if len(web_page.history) > 1:
+                raise Exception('Problem not found.')
+
+        #
+        #   For contests,
+        #   both wrong and correct contests take only one redirection.
+        #   Hence, if error code 404 is returned, it is a wrong contest.
+        #
+        elif (isContest):
+            try:
+                web_page = requests.get(urlPath)
+            except IOError:
+                raise IOError('Cannot connect to codechef.com')
+
+            if (web_page.status_code == 404):
+                raise Exception('Contest not found.')
 
         # If correct user's page is downloaded, save it to the page.
         page = open(filePath, "wb")
-        page.write(web_page.encode('utf-8').strip())
+        page.write(web_page.text.encode('utf-8').strip())
         page.close()
 
     return BeautifulSoup(open(filePath).read())
@@ -87,20 +130,20 @@ def downloadPage(username, timeOutTime=0, isProblem = False, isContest = False):
         * Readable -> The file is written with an extension of '.json'
         * Compressed -> The file is written with an extension of '.cjson'
 """
-def putDataInFile (username, attributes, compressed=False):
+def dumpData (attributes, filename, compressed = False):
     if (not compressed):
-        with open(username + '.json', 'w') as alp:
+        with open(filename + '.json', 'w') as alp:
             alp.write(json.dumps(attributes, indent=4))
     else:
         #Compressed JSON files to be denoted by cjson
-        with open(username + '.cjson', 'wb') as alp:
+        with open(filename + '.cjson', 'wb') as alp:
         # Use zlib library to compress JSON.
             alp.write(zlib.compress(json.dumps(attributes, indent=0)))
 
 """
     Returns the data from the file written by putDataInFile().
 """
-def getDataFromFile (filename):
+def getData (filename):
 
     attributes = OrderedDict()
     
