@@ -1,8 +1,10 @@
 # Codechef Unofficial API
 
-### Parses Codechef user data into JSON format.
+Parses "most of the data" from [Codechef](http://www.codechef.com), including the user data, the contest data, and the problem data.
 
-It uses `BeautifulSoup` and `requests` to parse HTML from `http://www.codechef.com/users/**username**`
+#### Requirements:
 
-To install these modules,
-	`pip install BeautifulSoup requests`
+1. [`BeautifulSoup`](http://www.crummy.com/software/BeautifulSoup/)
+2. [`requests`](http://docs.python-requests.org/en/latest/)
+
+To install these modules, `pip install BeautifulSoup requests`
