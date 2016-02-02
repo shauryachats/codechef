@@ -36,6 +36,8 @@ def getProblemData(problemCode, timeOutTime = 0):
         else:
             attributes.update( { key : tr[1].text } )
     
-    #print json.dumps(attributes, indent=4)
     return attributes
 
+"""
+    
+"""

@@ -10,7 +10,12 @@ from BeautifulSoup import BeautifulSoup
     Downloads the respective HTML file, checks if the page hasn't timed out,
     and returns the BeautifulSoup object of the webpage.
 """
-def downloadPage(username, timeOutTime=0, isProblem = False, isContest = False, isUser = False):
+def downloadPage(username, 
+                 timeOutTime=0,
+                 isProblem = False,
+                 isContest = False,
+                 isUser = False ):
+
     filePath = ".codechef/"
     urlPath = "http://www.codechef.com/" 
 

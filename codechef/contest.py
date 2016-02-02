@@ -1,4 +1,4 @@
-from utils import downloadPage, putDataInFile
+from utils import downloadPage, dumpData
 import json
 from BeautifulSoup import BeautifulSoup
 

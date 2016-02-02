@@ -18,7 +18,7 @@ import logging
 import re
 
 
-from utils import downloadPage, putDataInFile, getDataFromFile, convertToKey
+from utils import downloadPage, dumpData, getData , convertToKey
 from problem import getProblemData
 from contest import getContestList, getContestData
 
@@ -52,7 +52,7 @@ def getUserData(username , timeOutTime=0):
     # Dictionary returning all the scraped data from the HTML.
     attributes = OrderedDict()
 
-    soup = downloadPage(username, timeOutTime)
+    soup = downloadPage(username, timeOutTime, isUser = True)
 
     # The profile_tab contains all the data about the user.
     profileTab = soup.find("div", {'class': "profile"})
@@ -73,7 +73,7 @@ def getUserData(username , timeOutTime=0):
     #
     #	Removing unwanted keys from attributes
     #
-    unwantedKeys = ["student/professional", "teams_list", "link", "motto"]
+    unwantedKeys = ["studentprofessional", "teams_list", "link", "motto"]
     for key in unwantedKeys:
         try:
             attributes.pop(key, None)
