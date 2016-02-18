@@ -41,7 +41,7 @@ def parseProblems(problemsC):
     return problemDict
 
 """
-	getUserDataFromNet() does all the dirty work of parsing the HTML and junxing it altogether
+	getUserData() does all the dirty work of parsing the HTML and junxing it altogether
 	in a crude 'attributes' dict.
 """
 
@@ -103,7 +103,7 @@ def getUserData(username , timeOutTime=0):
     keys = ['prob_complete', 'prob_partial', 'prob_submit',
             'ac_partial', 'ac_complete', 'wa', 'cte', 'rte', 'tle']
     for i in xrange(0, len(problemStats) - 1):
-        stats[keys[i]] = problemStats[i]
+        stats[keys[i]] = int(problemStats[i])
     # print stats
     attributes.update({'problem_stats': stats})
 
@@ -120,7 +120,7 @@ def getUserData(username , timeOutTime=0):
         if (parsedText == "NA"):
             parsedText = "0/0"
         parsedText = parsedText.split('/')
-        ratingList.update( { keys[i]: [ parsedText[0], parsedText[1], tr[1].text.replace('&nbsp;(?)', '') ] } )
+        ratingList.update( { keys[i]: [ int(parsedText[0]), int(parsedText[1]), float(tr[1].text.replace('&nbsp;(?)', '')) ] } )
     
     attributes.update( {'rating_table': ratingList } )
 
