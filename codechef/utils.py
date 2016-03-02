@@ -14,7 +14,12 @@ def downloadPage(username,
                  timeOutTime=0,
                  isProblem = False,
                  isContest = False,
-                 isUser = False ):
+                 isUser = False,
+                 baseDirectory = None ):
+
+    #If custom base directory is set. 
+    if baseDirectory:
+        os.chdir( baseDirectory )
 
     filePath = ".codechef/"
     urlPath = "http://www.codechef.com/" 
