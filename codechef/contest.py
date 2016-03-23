@@ -1,36 +1,81 @@
 from utils import downloadPage, dumpData
 import json
 from BeautifulSoup import BeautifulSoup
+from collections import OrderedDict
 
 """
     getContestList() parses all the contests from codechef.com/contests
 
     It can also return data of a particular contest, if findContest is not None
+
+    It can also return contest list according to Future, Present, or Past contests.
+
 """
-def getContestList(findContest = None, timeOutTime = 0):
+def getContestList(findContest = None, timeOutTime = 0, futureContest = False, presentContest = False, pastContest = False):
 
     soup = downloadPage('contests', timeOutTime = timeOutTime)
 
+    #OrderedDict for easy visualisation, but it is kind of slow.
     contestData = {}
 
     tableList = soup.findAll('div', { 'class' : 'table-questions'})
-    for table in tableList:
-        rows = table.table.findAll('tr')
-        #Skipping the first row, which contains the titles.
-        for row in rows[1:]:
-            row = row.findAll('td')
-            tempData = []
-            #The first td here contains the contest code, which we use to make the key.
-            for td in row[1:]:
-                tempData.append(td.text)
-            contestData.update( { row[0].text : tempData } )
+    
+    """
+        If there are two tableList divs, the first one will be future contests,
+        and the second one will be past contests.
 
+        If there are three tableList divs, the first one will be present contests,
+        the second one will be future contests and the third one will be past contests.
+    
+    """
+
+    #If by default, none of the contests is marked True, return details of ALL the contests.
+    if not(futureContest or presentContest or pastContest):
+        futureContest = True
+        presentContest = True
+        pastContest = True
+
+    variables = []
+
+    if len(tableList) == 3:
+        variables.append('presentContest')
+        variables.append('futureContest')
+        variables.append('pastContest')
+    elif len(tableList) == 2:
+        variables.append('futureContest')
+        variables.append('pastContest')        
+    else:
+        variables.append('pastContest')
+
+    i = 0
+
+    for table in tableList:
+        if eval(variables[i]) == True:
+            rows = table.table.findAll('tr')        
+                
+            #Skipping the first row, which contains the titles.
+            for row in rows[1:]:
+                row = row.findAll('td')
+                tempData = []
+                
+                #The first td here contains the contest code, which we use to make the key.
+                for td in row[1:]:
+                    tempData.append(td.text)
+                         
+                contestData.update( { row[0].text : tempData } )
+        
+        i += 1
+
+
+    #
+    #   Looking for the findContest contest.
+    #
     if (findContest is not None):
         #Search through contestData for the findContest key and return its data.
         if findContest in contestData:
             return contestData[findContest]
         else:
-            raise Exception('Contest not found.')
+            raise Exception('Contest not found in contest list.')
     else:
         return contestData
 
