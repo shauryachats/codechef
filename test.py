@@ -3,26 +3,35 @@ import codechef.user
 import codechef.problem
 import codechef.utils
 import json
+import sys
+
+print str(sys.argv)
 
 #Testing user.getUserData()
-a = codechef.user.getUserData('shauryachats', timeOutTime = 0)
-print json.dumps(a, indent = 4)
+if 'a' in str(sys.argv):
+	a = codechef.user.getUserData('shauryachats', timeOutTime = 0)
+	print json.dumps(a, indent = 4)
 
 #Testing contest.getContestData()
-b = codechef.contest.getContestData('LTIME20', timeOutTime = 0)
-print json.dumps(b, indent = 4)
+if 'b' in str(sys.argv):
+	b = codechef.contest.getContestData('LTIME20', timeOutTime = 0)
+	print json.dumps(b, indent = 4)
 
 #Testing contest.getContestList()
-c = codechef.contest.getContestList(timeOutTime = 0)
-print json.dumps(c, indent = 4)
+if 'c' in str(sys.argv):
+	c = codechef.contest.getContestList(timeOutTime = 0)
+	print json.dumps(c, indent = 4)
 
 #Testing problem.getProblemData()
-d = codechef.problem.getProblemData('TEST', timeOutTime = 0)
-print json.dumps(d, indent = 4)
+if 'd' in str(sys.argv):
+	d = codechef.problem.getProblemData('TEST', timeOutTime = 0)
+	print json.dumps(d, indent = 4)
 
 #Testing utils.dumpData()
-codechef.utils.dumpData(d, 'test', compressed=True)
+if 'd' in str(sys.argv):
+	codechef.utils.dumpData(d, 'test', compressed=True)
 
 #Testing utils.getData()
-e = codechef.utils.getData('test.cjson')
-print json.dumps(e, indent = 4)
+if 'd' in str(sys.argv):
+	e = codechef.utils.getData('test.cjson')
+	print json.dumps(e, indent = 4)

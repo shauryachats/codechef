@@ -104,9 +104,10 @@ def getContestData(contestCode, timeOutTime = 0):
     problemList = {}
     for problem in problemRow:
         problem = problem.findAll('td')
-        tempList = []
-        for items in problem[2:]:
-            tempList.append(items.text)
+        tempList = {}
+        tempList.update({"problem_name" : problem[0].text})
+        tempList.update({"solved" : problem[2].text})
+        tempList.update({"accuracy" : problem[3].text})
         problemList[ problem[1].text ] = tempList 
 
     attributes['problem_list'] = problemList
