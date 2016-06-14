@@ -67,22 +67,24 @@ def getContestData(contestCode, timeOutTime = 0):
     soup = downloadPage(contestCode, timeOutTime=timeOutTime, isContest = True)
     attributes = getContestList(findContest = contestCode, timeOutTime = timeOutTime)
 
-    dataTable = soup.find('table', { 'class' : 'problems'} )
+    dataTable = soup.find('table', { 'class' : 'dataTable' } )
     problemRow = dataTable.findAll('tr', { 'class' : 'problemrow'})
 
     #
     #   Parsing the list of problems and the basic stats.
     #   
     problemList = {}
+    
     for problem in problemRow:
         problem = problem.findAll('td')
         tempList = {}
-        tempList.update({"problem_name" : problem[0].text})
-        tempList.update({"solved" : problem[2].text})
-        tempList.update({"accuracy" : problem[3].text})
+        tempList['name'] = problem[0].text
+        tempList['solved'] = problem[2].text
+        tempList['accuracy'] = problem[3].text
+        
         problemList[ problem[1].text ] = tempList 
 
-    attributes['problem_list'] = problemList
+    attributes['problemList'] = problemList
 
     #
     #   Checking if the contest is a Team Contest or not.
