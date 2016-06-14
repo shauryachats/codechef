@@ -22,21 +22,20 @@ from utils import downloadPage, dumpData, getData , camelCase
 from problem import getProblemData
 from contest import getContestList, getContestData
 
-"""
-    
-"""
 #
 #	Helper function for getUserData() to parse the list of complete and partial problems.
 #
 def parseProblems(problemsC):
-    problemDict = {}
+    problemDict = OrderedDict()
 
     for problemGroup in problemsC:
         problemList = []
         problemGroupList = problemGroup.findAll('a')
         for problem in problemGroupList:
             problemList.append(problem.text)
-        problemDict.update({problemGroup.b.text: problemList})
+        
+        #Added arbitary contest code "PRACTICE" for practice problems.
+        problemDict[ "PRACTICE" if problemGroup.b.text.startswith("Practice") else problemGroup.b.text ] = problemList
 
     return problemDict
 
@@ -78,7 +77,7 @@ def getUserData(username , timeOutTime=0):
     while not row.text.startswith("Problems"):
         # Strip the text of unwanted &nbsp, and splitting via the :
         parsedText = row.text.replace("&nbsp;", '').split(':')
-        attributes.update({camelCase(parsedText[0]): parsedText[1]})
+        attributes[ camelCase(parsedText[0]) ] = parsedText[1]
         row = row.findNext("tr")
 
     #
@@ -96,14 +95,14 @@ def getUserData(username , timeOutTime=0):
     #
     problemsComplete = row.td.findNext('td').findAll('p')
     completeProblemDict = OrderedDict()
-    attributes.update({'completeProblem': parseProblems(problemsComplete)})
+    attributes['completeProblem'] = parseProblems(problemsComplete)
 
     #
     #	Parsing the partial problem list.
     #
     problemsPartial = row.findNext('tr').td.findNext('td').findAll('p')
     partialProblemDict = OrderedDict()
-    attributes.update({'partialProblem': parseProblems(problemsPartial)})
+    attributes['partialProblem'] = parseProblems(problemsPartial)
 
     #
     #	Parsing the problem_stats table to get the number of submissions, WA, RTE, and the stuff.
@@ -116,7 +115,7 @@ def getUserData(username , timeOutTime=0):
     for i in xrange(0, len(problemStats) - 1):
         stats[keys[i]] = int(problemStats[i])
     # print stats
-    attributes.update({'problemStats': stats})
+    attributes['problemStats'] = stats
 
     #
     #	Parsing the rating table to get the current ratings of the user.
@@ -131,8 +130,8 @@ def getUserData(username , timeOutTime=0):
         if (parsedText == "NA"):
             parsedText = "0/0"
         parsedText = parsedText.split('/')
-        ratingList.update( { keys[i]: [ int(parsedText[0]), int(parsedText[1]), float(tr[1].text.replace('&nbsp;(?)', '')) ] } )
+        ratingList[ keys[i] ] = [ int(parsedText[0]), int(parsedText[1]), float(tr[1].text.replace('&nbsp;(?)', '')) ] 
     
-    attributes.update( {'ratingTable': ratingList } )
+    attributes['ratingTable'] = ratingList 
 
     return attributes
