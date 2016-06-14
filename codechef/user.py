@@ -18,7 +18,7 @@ import logging
 import re
 
 
-from utils import downloadPage, dumpData, getData , convertToKey
+from utils import downloadPage, dumpData, getData , camelCase
 from problem import getProblemData
 from contest import getContestList, getContestData
 
@@ -55,25 +55,36 @@ def getUserData(username , timeOutTime=0):
     soup = downloadPage(username, timeOutTime, isUser = True)
 
     # The profile_tab contains all the data about the user.
-    profileTab = soup.find("div", {'class': "profile"})
+    profileTab = soup.find('div', {'class': 'profile'})
 
-    attributes.update(
-        {"real_name": profileTab.table.text.replace("&nbsp;", '')})
+    #   This profile consists of four tables.
+    #
+    #   ->  The first table just contains the real name of the user, and the display picture.
+    #   ->  The second table contains the info about the user, and the problems info.
+    #   ->  The third table contains the problem statistics.
+    #   ->  The fourth table contains the performance graphs, in SVG format.
+    #
+
+    #The real name is present in a simple div.user-name-box,
+    attributes['realName'] = profileTab.find('div', {'class' : 'user-name-box'}).text
+
+    #The displayPicture link is present in div.user-thumb-pic
+    attributes['displayPicture'] = profileTab.find('div', {'class' : 'user-thumb-pic'}).img['src']
 
     row = profileTab.table.findNext("table").tr
-
     #
     #	Parsing the personal data of the user.
     #
     while not row.text.startswith("Problems"):
         # Strip the text of unwanted &nbsp, and splitting via the :
         parsedText = row.text.replace("&nbsp;", '').split(':')
-        attributes.update({convertToKey(parsedText[0]): parsedText[1]})
+        attributes.update({camelCase(parsedText[0]): parsedText[1]})
         row = row.findNext("tr")
+
     #
-    #	Removing unwanted keys from attributes
+    #	Removing unwanted keys from attributes (for now)
     #
-    unwantedKeys = ["studentprofessional", "teams_list", "link", "motto"]
+    unwantedKeys = ["student/professional", "teamsList", "link", "motto"]
     for key in unwantedKeys:
         try:
             attributes.pop(key, None)
@@ -85,14 +96,14 @@ def getUserData(username , timeOutTime=0):
     #
     problemsComplete = row.td.findNext('td').findAll('p')
     completeProblemDict = OrderedDict()
-    attributes.update({'complete_problem': parseProblems(problemsComplete)})
+    attributes.update({'completeProblem': parseProblems(problemsComplete)})
 
     #
     #	Parsing the partial problem list.
     #
     problemsPartial = row.findNext('tr').td.findNext('td').findAll('p')
     partialProblemDict = OrderedDict()
-    attributes.update({'partial_problem': parseProblems(problemsPartial)})
+    attributes.update({'partialProblem': parseProblems(problemsPartial)})
 
     #
     #	Parsing the problem_stats table to get the number of submissions, WA, RTE, and the stuff.
@@ -100,12 +111,12 @@ def getUserData(username , timeOutTime=0):
     problemStats = soup.find("table", id="problem_stats").tr.findNext('tr').findAll('td')
     problemStats = [item.text for item in problemStats]
     stats = {}
-    keys = ['prob_complete', 'prob_partial', 'prob_submit',
-            'ac_partial', 'ac_complete', 'wa', 'cte', 'rte', 'tle']
+    keys = ['probComplete', 'probPartial', 'probSubmit',
+            'acPartial', 'acComplete', 'wa', 'cte', 'rte', 'tle']
     for i in xrange(0, len(problemStats) - 1):
         stats[keys[i]] = int(problemStats[i])
     # print stats
-    attributes.update({'problem_stats': stats})
+    attributes.update({'problemStats': stats})
 
     #
     #	Parsing the rating table to get the current ratings of the user.
@@ -122,6 +133,6 @@ def getUserData(username , timeOutTime=0):
         parsedText = parsedText.split('/')
         ratingList.update( { keys[i]: [ int(parsedText[0]), int(parsedText[1]), float(tr[1].text.replace('&nbsp;(?)', '')) ] } )
     
-    attributes.update( {'rating_table': ratingList } )
+    attributes.update( {'ratingTable': ratingList } )
 
     return attributes

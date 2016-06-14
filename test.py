@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import codechef.contest
 import codechef.user
 import codechef.problem
@@ -9,7 +11,7 @@ print str(sys.argv)
 
 #Testing user.getUserData()
 if 'a' in str(sys.argv):
-	a = codechef.user.getUserData('shauryachats', timeOutTime = 0)
+	a = codechef.user.getUserData('shauryachats', timeOutTime = 1000000)
 	print json.dumps(a, indent = 4)
 
 #Testing contest.getContestData()

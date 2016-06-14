@@ -1,7 +1,7 @@
 from BeautifulSoup import BeautifulSoup
 import re
 import json
-from utils import downloadPage, convertToKey
+from utils import downloadPage, camelCase
 
 """
     Scraps problem metadata from the problem data.
@@ -24,7 +24,7 @@ def getProblemData(problemCode, timeOutTime = 0):
     
     for tr in table:
         tr = tr.findAll('td')
-        key = convertToKey(tr[0].text)
+        key = camelCase(tr[0].text)
         #For tags, we need to seperate the tags from the <a>
         if (key == 'tags'):
             temp = tr[1].findAll('a')

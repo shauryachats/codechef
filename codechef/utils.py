@@ -175,6 +175,8 @@ def getData (filename):
 
     It replaces spaces with underscore and strips all the non alphanumeric characters.
 """
-def convertToKey(token):
-    temp = token.lower().replace(' ', '_')
-    return ''.join(ch for ch in temp if ch.isalnum() or ch == '_')
+def camelCase(token):
+    #temp = token.lower().replace(' ', '_')
+    components = token.lower().split(' ')
+    return components[0] + ''.join(x.title() for x in components[1:])
+    #return ''.join(ch for ch in temp if ch.isalnum() or ch == '_')
