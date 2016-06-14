@@ -16,12 +16,12 @@ if 'a' in str(sys.argv):
 
 #Testing contest.getContestData()
 if 'b' in str(sys.argv):
-	b = codechef.contest.getContestData('LTIME20', timeOutTime = 0)
+	b = codechef.contest.getContestData('LTIME20', timeOutTime = 1000000)
 	print json.dumps(b, indent = 4)
 
 #Testing contest.getContestList()
 if 'c' in str(sys.argv):
-	c = codechef.contest.getContestList(timeOutTime = 0)
+	c = codechef.contest.getContestList(timeOutTime = 100000)
 	print json.dumps(c, indent = 4)
 
 #Testing problem.getProblemData()

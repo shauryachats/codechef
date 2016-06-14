@@ -1,4 +1,4 @@
-from utils import downloadPage, dumpData
+from utils import downloadPage, dumpData, camelCase
 import json
 from BeautifulSoup import BeautifulSoup
 from collections import OrderedDict
@@ -16,84 +16,56 @@ def getContestList(findContest = None, timeOutTime = 0, futureContest = False, p
     soup = downloadPage('contests', timeOutTime = timeOutTime)
 
     #OrderedDict for easy visualisation, but it is kind of slow.
-    contestData = {}
+    contestList = OrderedDict()
 
-    tableList = soup.findAll('div', { 'class' : 'table-questions'})
-    
-    """
-        If there are two tableList divs, the first one will be future contests,
-        and the second one will be past contests.
+    tableList = soup.find('div', { 'class' : 'content-wrapper'})
 
-        If there are three tableList divs, the first one will be present contests,
-        the second one will be future contests and the third one will be past contests.
-    
-    """
+    #
+    #   Since "Present Contests", "Future Contests" and the like 
+    #   are encapsulated in a <h3>, we can use that to find which
+    #   all contests are present.
+    #
+    for contestType in tableList.findAll('h3'):
 
-    #If by default, none of the contests is marked True, return details of ALL the contests.
-    if not(futureContest or presentContest or pastContest):
-        futureContest = True
-        presentContest = True
-        pastContest = True
-
-    variables = []
-
-    if len(tableList) == 3:
-        variables.append('presentContest')
-        variables.append('futureContest')
-        variables.append('pastContest')
-    elif len(tableList) == 2:
-        variables.append('futureContest')
-        variables.append('pastContest')        
-    else:
-        variables.append('pastContest')
-
-    i = 0
-
-    for table in tableList:
-        if eval(variables[i]) == True:
-            rows = table.table.findAll('tr')        
-                
-            #Skipping the first row, which contains the titles.
-            for row in rows[1:]:
-                row = row.findAll('td')
-                tempData = []
-                
-                #The first td here contains the contest code, which we use to make the key.
-                for td in row[1:]:
-                    tempData.append(td.text)
-                         
-                contestData.update( { row[0].text : tempData } )
+        #The div containing the contest list is next to the h3 tag.
+        for tr in contestType.findNext('div').table.tbody.findAll('tr'):
         
-        i += 1
+            #
+            #   'tr' contains a row containing the contestcode, contestname, start
+            #   and end time of all the contests.
+            #
+            contestData = OrderedDict()
+            
+            tdList = tr.findAll('td')
+            
+            contestCode = tdList[0].text
 
+            contestData['name'] = tdList[1].text
+            contestData['startTime'] = tdList[2].text
+            contestData['endTime'] = tdList[3].text
+
+            contestList[ contestCode ] = contestData
 
     #
     #   Looking for the findContest contest.
     #
     if (findContest is not None):
-        #Search through contestData for the findContest key and return its data.
-        if findContest in contestData:
-            return contestData[findContest]
+        #Search through contestList for the findContest key and return its data.
+        if findContest in contestList:
+            return contestList[findContest]
         else:
             raise Exception('Contest not found in contest list.')
     else:
-        return contestData
-
+        return contestList
+        
 
 """
     Returns the list of Problem and other data from the contest page.
 """
 def getContestData(contestCode, timeOutTime = 0):
-    attributes = {}
 
     soup = downloadPage(contestCode, timeOutTime=timeOutTime, isContest = True)
-    
-    contestData = getContestList(findContest = contestCode, timeOutTime = timeOutTime)
-
-    attributes['title'] = contestData[0]
-    #TODO: Parse timestamps out of strings using datetime module.
-    attributes['start_time'] = contestData[1]
-    attributes['end_time'] = contestData[2]
+    attributes = getContestList(findContest = contestCode, timeOutTime = timeOutTime)
 
     dataTable = soup.find('table', { 'class' : 'problems'} )
     problemRow = dataTable.findAll('tr', { 'class' : 'problemrow'})
