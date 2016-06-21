@@ -1,7 +1,7 @@
 from BeautifulSoup import BeautifulSoup
 import re
 import json
-from utils import downloadPage, camelCase
+from utils import *
 
 """
     Scraps problem metadata from the problem data.
@@ -9,11 +9,20 @@ from utils import downloadPage, camelCase
 
     To parse the problem statement, use getProblemStatement()
 """
-def getProblemData(problemCode, timeOutTime = 0):
+def getProblemData(problemCode, expiryTime = 0, writeInFile = False):
     attributes = {}
 
-    soup = downloadPage(problemCode, timeOutTime, isProblem = True)
-    
+    if expiryTime > 0:
+        attributes = checkInFile('problems/' + problemCode, expiryTime)
+
+        if attributes is not None:
+            return attributes
+        else:
+            attributes = {}
+
+    #soup = downloadPage(problemCode, expiryTime, isProblem = True)
+    soup = downloadProblemPage(problemCode)
+
     title = soup.find('h1')
                                     #Removed uneven spacing in the title.
     attributes.update( { 'title' : re.sub(' +', ' ', title.contents[0])[:-1] } )
@@ -35,6 +44,9 @@ def getProblemData(problemCode, timeOutTime = 0):
             attributes.update( { key : tr[1].text.split(', ')})
         else:
             attributes.update( { key : tr[1].text } )
+
+    if writeInFile:
+        writeToFile('problems/' + problemCode, attributes)
     
     return attributes
 

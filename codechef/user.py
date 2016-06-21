@@ -59,12 +59,12 @@ def getUserData(username , expiryTime = 0, writeInFile = False):
     if expiryTime > 0:
         attributes = checkInFile('users/' + username, expiryTime)
 
-    #   Returning the attributes object.
-    if attributes is not None:
-        print '[*] Found file. Returning object.'
-        return attributes
-    else:
-        attributes = OrderedDict()
+        #   Returning the attributes object.
+        if attributes is not None:
+            print '[*] Found file. Returning object.'
+            return attributes
+        else:
+            attributes = OrderedDict()
 
     soup = downloadUserPage(username)
 

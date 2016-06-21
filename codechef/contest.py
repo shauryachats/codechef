@@ -11,12 +11,19 @@ from collections import OrderedDict
     It can also return contest list according to Future, Present, or Past contests.
 
 """
-def getContestList(findContest = None, timeOutTime = 0, futureContest = False, presentContest = False, pastContest = False):
+def getContestList(findContest = None, expiryTime = 0, writeInFile = False):
 
-    soup = downloadPage('contests', timeOutTime = timeOutTime)
-
-    #OrderedDict for easy visualisation, but it is kind of slow.
     contestList = OrderedDict()
+
+    if expiryTime > 0:
+        contestList = checkInFile('contests', expiryTime)
+
+        if contestList is not None:
+            return contestList
+        else:
+            contestList = OrderedDict()
+
+    soup = downloadContestList()
 
     tableList = soup.find('div', { 'class' : 'content-wrapper'})
 
@@ -46,6 +53,10 @@ def getContestList(findContest = None, timeOutTime = 0, futureContest = False, p
 
             contestList[ contestCode ] = contestData
 
+
+    if writeInFile:
+        writeToFile('contests', contestList)
+
     #
     #   Looking for the findContest contest.
     #
@@ -62,10 +73,23 @@ def getContestList(findContest = None, timeOutTime = 0, futureContest = False, p
 """
     Returns the list of Problem and other data from the contest page.
 """
-def getContestData(contestCode, timeOutTime = 0):
+def getContestData(contestCode, expiryTime = 0, writeInFile = False):
 
-    soup = downloadPage(contestCode, timeOutTime=timeOutTime, isContest = True)
-    attributes = getContestList(findContest = contestCode, timeOutTime = timeOutTime)
+    attributes = OrderedDict()
+
+    if expiryTime > 0:
+        attributes = checkInFile('contest/' + contestCode, expiryTime)
+
+        if attributes is not None:
+            return attributes
+        else:
+            attributes = OrderedDict()
+
+    soup = downloadContestPage(contestCode)
+    #soup = downloadPage(contestCode, expiryTime=expiryTime, isContest = True)
+    attributes = getContestList(findContest = contestCode, expiryTime = expiryTime)
+
+
 
     dataTable = soup.find('table', { 'class' : 'dataTable' } )
     problemRow = dataTable.findAll('tr', { 'class' : 'problemrow'})
@@ -94,5 +118,8 @@ def getContestData(contestCode, timeOutTime = 0):
         attributes['team'] = True
     else:
         attributes['team'] = False
+
+    if writeInFile:
+        writeToFile('contest/' + contestCode, attributes)
 
     return attributes

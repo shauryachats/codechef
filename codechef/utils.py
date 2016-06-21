@@ -12,7 +12,7 @@ from BeautifulSoup import BeautifulSoup
     and returns the BeautifulSoup object of the webpage.
 """
 def downloadPage(username, 
-                 timeOutTime=0,
+                 expiryTime=0,
                  isProblem = False,
                  isContest = False,
                  isUser = False,
@@ -49,7 +49,7 @@ def downloadPage(username,
 
     # Check if the webpage is there.
     # If not, download.
-    # If yes, check for the timeOutTime and if time_diff > timeOutTime, redownload.
+    # If yes, check for the expiryTime and if time_diff > expiryTime, redownload.
     # Else, do nothing.
 
     shouldWeDownloadPage = False
@@ -62,7 +62,7 @@ def downloadPage(username,
         downloadedTime = datetime.datetime.fromtimestamp(os.path.getmtime(filePath))
         timeDifference = datetime.datetime.now() - downloadedTime
 
-        if (int(timeDifference.seconds) > timeOutTime):
+        if (int(timeDifference.seconds) > expiryTime):
             os.remove(filePath)
             shouldWeDownloadPage = True
             print "[*] Downloaded page is expired. Redownloading..."
@@ -140,7 +140,7 @@ def downloadPage(username,
 #
 def makeAllDirs():
 
-    dirsToCreate = {'.codechef/', '.codechef/users/', '.codechef/problem/', '.codechef/contest/'}
+    dirsToCreate = {'.codechef/', '.codechef/users/', '.codechef/problems/', '.codechef/contest/'}
 
     for dir in dirsToCreate:
         if (not os.path.exists(dir)):
@@ -212,8 +212,57 @@ def downloadUserPage(username):
 
     return BeautifulSoup(web_page.text.encode('utf-8').strip())
 
+"""
+    downloadContestList() returns the BeautifulSoup object of the All Contest list page.
+    If not, it raises an Exception.
+"""
 
+def downloadContestList():
 
+    URL = "https://codechef.com/contests"
+
+    web_page = None
+
+    try:
+        web_page = requests.get(URL)
+    except IOError:
+        raise IOError('Cannot connect to codechef.com')
+
+    if (web_page.status_code != 200):
+        raise Exception('Contest List page did not load.')
+
+    return BeautifulSoup(web_page.text.encode('utf-8').strip())
+
+def downloadContestPage(contestCode):
+
+    URL = "https://codechef.com/" + contestCode
+
+    web_page = None
+    try:
+        web_page = requests.get(URL)
+    except IOError:
+        raise IOError('Cannot connect to codechef.com')
+
+    if web_page.status_code != 200:
+        raise Exception('Contest not found.')
+
+    return BeautifulSoup(web_page.text.encode('utf-8').strip())
+
+def downloadProblemPage(problemCode):
+
+    URL = "https://codechef.com/problems/" + problemCode
+
+    web_page = None
+    try:
+        web_page = requests.get(URL)
+    except IOError:
+        raise IOError('Cannot connect to codechef.com')
+
+    for response in web_page.history:
+        if response.status_code == 302:
+            raise Exception('Problem not found.')
+
+    return BeautifulSoup(web_page.text.encode('utf-8').strip())
 
 
 """
