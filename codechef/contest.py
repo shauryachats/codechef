@@ -1,4 +1,4 @@
-from utils import downloadPage, dumpData, camelCase
+from utils import *
 import json
 from BeautifulSoup import BeautifulSoup
 from collections import OrderedDict

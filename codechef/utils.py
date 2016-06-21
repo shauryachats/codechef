@@ -6,6 +6,7 @@ import zlib
 from collections import OrderedDict
 from BeautifulSoup import BeautifulSoup
 
+
 """
     Downloads the respective HTML file, checks if the page hasn't timed out,
     and returns the BeautifulSoup object of the webpage.
@@ -55,7 +56,7 @@ def downloadPage(username,
 
     if (not os.path.exists(filePath)):
         shouldWeDownloadPage = True
-        print "Page does not exist. Downloading..."
+        print "[*] Page does not exist. Downloading..."
 
     else:
         downloadedTime = datetime.datetime.fromtimestamp(os.path.getmtime(filePath))
@@ -64,7 +65,7 @@ def downloadPage(username,
         if (int(timeDifference.seconds) > timeOutTime):
             os.remove(filePath)
             shouldWeDownloadPage = True
-            print "Downloaded page is expired. Redownloading..."
+            print "[*] Downloaded page is expired. Redownloading..."
 
     if (shouldWeDownloadPage == True):
         
@@ -134,49 +135,91 @@ def downloadPage(username,
 
     return BeautifulSoup(open(filePath).read())
 
+#
+#
+#
+def makeAllDirs():
 
-"""
-    Writes the data in JSON format in two modes:
-        * Readable -> The file is written with an extension of '.json'
-        * Compressed -> The file is written with an extension of '.cjson'
-"""
-def dumpData (attributes, filename, compressed = False):
-    if (not compressed):
-        with open(filename + '.json', 'w') as alp:
-            alp.write(json.dumps(attributes, indent=4))
-    else:
-        #Compressed JSON files to be denoted by cjson
-        with open(filename + '.cjson', 'wb') as alp:
-        # Use zlib library to compress JSON.
-            alp.write(zlib.compress(json.dumps(attributes, indent=0)))
+    dirsToCreate = {'.codechef/', '.codechef/users/', '.codechef/problem/', '.codechef/contest/'}
 
-"""
-    Returns the data from the file written by putDataInFile().
-"""
-def getData (filename):
-
-    attributes = OrderedDict()
-    
-    #If the JSON file is compressed,
-    if (filename.endswith('.cjson')): 
-        with open(filename, 'rb') as alp:
-            attributes = json.loads(zlib.decompress(alp.read()))
-    elif (filename.endswith('.json')):
-        with open(filename, 'r') as alp:
-            attributes = json.loads(alp.read())
-    else:
-        raise IOError('Invalid file type.')
-
-    return attributes
+    for dir in dirsToCreate:
+        if (not os.path.exists(dir)):
+            os.makedirs(dir)
 
 
 """
-    Converts text into 'key' format: i.e. "About me" becomes 'about_me'
+    checkInFile() checks the pointed file for JSON compressed by zlib.
 
-    It replaces spaces with underscore and strips all the non alphanumeric characters.
+    If it founds the correct file which is not yet expired, it returns the JSON in a python object.
+    Otherwise, it returns None.
+"""
+
+def checkInFile(fileName, expiryTime):
+
+    FILE_PATH = '.codechef/' + fileName + '.cjson'
+    #Checking for the existance of the file.
+    if not os.path.exists(FILE_PATH):
+        print '[!] ' + fileName + ' not present.'
+        return None
+
+    #Checking time difference of the file.
+    downloadedTime = datetime.datetime.fromtimestamp(os.path.getmtime(FILE_PATH))
+    timeDifference = datetime.datetime.now() - downloadedTime
+    if (int(timeDifference.seconds) > expiryTime):
+        return None
+
+    #If the file is in the expiryTime limit, return the python object.
+    with open(FILE_PATH, 'rb') as alp:
+        return OrderedDict(json.loads(zlib.decompress(alp.read())))
+
+"""
+    writeToFile() writes the compressed JSON in the mentioned file.
+"""
+def writeToFile(fileName, attributes):
+
+    #   Make all the required directories.
+    makeAllDirs()
+
+    FILE_PATH = '.codechef/' + fileName + '.cjson'
+
+    with open(FILE_PATH, 'wb') as alp:
+        alp.write(zlib.compress(json.dumps(attributes, indent=0)))
+
+
+""" 
+    downloadUserPage() returns the BeautifulSoup object of the username, if found.
+    If not, it raises an Exception.
+"""
+def downloadUserPage(username):
+
+    print '[*] Downloading user ' + username
+
+    URL = "https://codechef.com/users/" + username
+
+    web_page = None
+
+    try:
+        web_page = requests.get(URL)
+    except IOError:
+        raise IOError('Cannot connect to codechef.com')
+
+    #
+    #   Apparently, if the username is not present, a 302 response is returned.
+    #
+    for response in web_page.history:
+        if response.status_code == 302:
+            raise Exception('User not found.')
+
+    return BeautifulSoup(web_page.text.encode('utf-8').strip())
+
+
+
+
+
+"""
+    Converts token into camelCase.
 """
 def camelCase(token):
-    #temp = token.lower().replace(' ', '_')
+
     components = token.lower().split(' ')
     return components[0] + ''.join(x.title() for x in components[1:])
-    #return ''.join(ch for ch in temp if ch.isalnum() or ch == '_')

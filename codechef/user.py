@@ -18,7 +18,7 @@ import logging
 import re
 
 
-from utils import downloadPage, dumpData, getData , camelCase
+from utils import *
 from problem import getProblemData
 from contest import getContestList, getContestData
 
@@ -47,11 +47,26 @@ def parseProblems(problemsC):
 # TODO : Try to parse the SVG image of the rating curve, to extract all data about the contest rating at any time.
 # REFACTOR : Split all the parsing methods into seperate, for easy debugging.
 
-def getUserData(username , timeOutTime=0):
-    # Dictionary returning all the scraped data from the HTML.
+def getUserData(username , expiryTime = 0, writeInFile = False):
+
+    # Dictionary returning all the scraped data from the HTML.    
     attributes = OrderedDict()
 
-    soup = downloadPage(username, timeOutTime, isUser = True)
+    #
+    #   Firstly, checking if the userdata is already stored in a CJSON file 
+    #   which is not yet expired.
+    #
+    if expiryTime > 0:
+        attributes = checkInFile('users/' + username, expiryTime)
+
+    #   Returning the attributes object.
+    if attributes is not None:
+        print '[*] Found file. Returning object.'
+        return attributes
+    else:
+        attributes = OrderedDict()
+
+    soup = downloadUserPage(username)
 
     # The profile_tab contains all the data about the user.
     profileTab = soup.find('div', {'class': 'profile'})
@@ -133,5 +148,10 @@ def getUserData(username , timeOutTime=0):
         ratingList[ keys[i] ] = [ int(parsedText[0]), int(parsedText[1]), float(tr[1].text.replace('&nbsp;(?)', '')) ] 
     
     attributes['ratingTable'] = ratingList 
+
+    #   Compress and write into the CJSON file as requested.
+    if writeInFile:
+        print '[*] Writing object to ' + username + '.cjson'
+        writeToFile('users/' + username, attributes)
 
     return attributes
