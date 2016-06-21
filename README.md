@@ -2,6 +2,8 @@
 
 Parses "most of the data" from [Codechef](http://www.codechef.com), including the user data, the contest data, and the problem data.
 
+###The API is hosted [here](chefapi-shauryachats.rhcloud.com).
+
 #### Requirements:
 
 1. [`BeautifulSoup`](http://www.crummy.com/software/BeautifulSoup/)
