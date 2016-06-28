@@ -194,7 +194,7 @@ def downloadUserPage(username):
 
     print '[*] Downloading user ' + username
 
-    URL = "https://codechef.com/users/" + username
+    URL = "https://www.codechef.com/users/" + username
 
     web_page = None
 
@@ -219,7 +219,7 @@ def downloadUserPage(username):
 
 def downloadContestList():
 
-    URL = "https://codechef.com/contests"
+    URL = "https://www.codechef.com/contests"
 
     web_page = None
 
@@ -235,7 +235,7 @@ def downloadContestList():
 
 def downloadContestPage(contestCode):
 
-    URL = "https://codechef.com/" + contestCode
+    URL = "https://www.codechef.com/" + contestCode
 
     web_page = None
     try:
@@ -250,7 +250,7 @@ def downloadContestPage(contestCode):
 
 def downloadProblemPage(problemCode):
 
-    URL = "https://codechef.com/problems/" + problemCode
+    URL = "https://www.codechef.com/problems/" + problemCode
 
     web_page = None
     try:
