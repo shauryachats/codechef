@@ -79,8 +79,11 @@ def getUserData(username , expiryTime = 0, writeInFile = False):
     #   ->  The fourth table contains the performance graphs, in SVG format.
     #
 
+    #Add the username too, for convinenece.
+    attributes['username'] = username
+
     #The real name is present in a simple div.user-name-box,
-    attributes['realName'] = profileTab.find('div', {'class' : 'user-name-box'}).text
+    attributes['realname'] = profileTab.find('div', {'class' : 'user-name-box'}).text
 
     #The displayPicture link is present in div.user-thumb-pic
     attributes['displayPicture'] = profileTab.find('div', {'class' : 'user-thumb-pic'}).img['src']
