@@ -88,6 +88,9 @@ def getUserData(username , expiryTime = 0, writeInFile = False):
     #The displayPicture link is present in div.user-thumb-pic
     attributes['displayPicture'] = profileTab.find('div', {'class' : 'user-thumb-pic'}).img['src']
 
+    if (attributes['displayPicture'].startswith('/sites/all/themes')):
+        attributes['displayPicture'] = "https://www.codechef.com/sites/all/themes/abessive/images/user_default_thumb.jpg"
+
     row = profileTab.table.findNext("table").tr
     #
     #	Parsing the personal data of the user.
