@@ -136,7 +136,7 @@ def getUserData(username , expiryTime = 0, writeInFile = False):
     for i in xrange(0, len(problemStats) - 1):
         stats[keys[i]] = int(problemStats[i])
     # print stats
-    attributes['problemStats'] = stats
+    attributes['stats'] = stats
 
     #
     #	Parsing the rating table to get the current ratings of the user.
@@ -153,7 +153,7 @@ def getUserData(username , expiryTime = 0, writeInFile = False):
         parsedText = parsedText.split('/')
         ratingList[ keys[i] ] = [ int(parsedText[0]), int(parsedText[1]), float(tr[1].text.replace('&nbsp;(?)', '')) ] 
     
-    attributes['ratingTable'] = ratingList 
+    attributes['rating'] = ratingList 
 
     #   Compress and write into the CJSON file as requested.
     if writeInFile:
