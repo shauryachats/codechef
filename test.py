@@ -11,7 +11,7 @@ print str(sys.argv)
 
 #Testing user.getUserData()
 if 'a' in str(sys.argv):
-	a = codechef.user.getUserData('sid02', expiryTime = 0, writeInFile = True)
+	a = codechef.user.getUserData('shauryachats', expiryTime = 0, writeInFile = True)
 	print json.dumps(a, indent = 4)
 
 #Testing contest.getContestData()

@@ -130,10 +130,10 @@ def getUserData(username , expiryTime = 0, writeInFile = False):
     #
     problemStats = soup.find("table", id="problem_stats").tr.findNext('tr').findAll('td')
     problemStats = [item.text for item in problemStats]
+    print problemStats
     stats = {}
-    keys = ['probComplete', 'probPartial', 'probSubmit',
-            'acPartial', 'acComplete', 'wa', 'cte', 'rte', 'tle']
-    for i in xrange(0, len(problemStats) - 1):
+    keys = ['pc', 'pp', 'ps', 'acp', 'acc', 'wa', 'cte', 'rte', 'tle']
+    for i in xrange(0, len(problemStats)):
         stats[keys[i]] = int(problemStats[i])
     # print stats
     attributes['stats'] = stats
