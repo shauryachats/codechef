@@ -6,8 +6,6 @@
    Author: Shaurya Chaturvedi
            shauryachats@gmail.com
 
-
-    TODO: Create a tester program, which can check if each method is working perfectly or not.
 """
 
 from BeautifulSoup import BeautifulSoup
@@ -88,8 +86,8 @@ def getUserData(username , expiryTime = 0, writeInFile = False):
     #The displayPicture link is present in div.user-thumb-pic
     attributes['displayPicture'] = profileTab.find('div', {'class' : 'user-thumb-pic'}).img['src']
 
-    if (attributes['displayPicture'].startswith('/sites/all/themes')):
-        attributes['displayPicture'] = "https://www.codechef.com/sites/all/themes/abessive/images/user_default_thumb.jpg"
+    if (attributes['displayPicture'].startswith('/sites/')):
+        attributes['displayPicture'] = "https://www.codechef.com/" + attributes['displayPicture']    
 
     row = profileTab.table.findNext("table").tr
     #
@@ -161,3 +159,30 @@ def getUserData(username , expiryTime = 0, writeInFile = False):
         writeToFile('users/' + username, attributes)
 
     return attributes
+
+def getRecent(username):
+
+	pageno = 0
+
+	URL = "https://www.codechef.com/recent/user"
+	params = { 'page' : pageno, 'user_handle' : username }
+
+	r = requests.get(URL, params=params)
+	html = json.loads(r.text)['content']
+
+	content = []
+
+	soup = BeautifulSoup(html.strip())
+	for tr in soup.table.tbody.findAll('tr'):
+		tds = tr.findAll('td')
+		
+		data = {}
+
+		data['subTime'] = tds[0].text
+		data['problemCode'] = tds[1].a['href'].split('/')[-1]
+		data['points'] = tds[2].text
+		data['language'] = tds[3].text
+
+		content.append( data )
+
+	print json.dumps(content, indent = 4)

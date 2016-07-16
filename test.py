@@ -33,3 +33,6 @@ if 'd' in str(sys.argv):
 if 'f' in str(sys.argv):
 	codechef.utils.downloadProblemPage('JAN16')
 	codechef.utils.downloadProblemPage('TEST')
+
+if 'g' in str(sys.argv):
+	codechef.user.getRecent('nikhilhassija')
