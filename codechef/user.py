@@ -160,29 +160,29 @@ def getUserData(username , expiryTime = 0, writeInFile = False):
 
     return attributes
 
-def getRecent(username):
+#
+#   Returns the most recent submittions by a user.
+#
+def getRecent(username, numberOfSub = 10):
 
-	pageno = 0
+    content = [] 
+    pageno = 0
 
-	URL = "https://www.codechef.com/recent/user"
-	params = { 'page' : pageno, 'user_handle' : username }
+    while (len(content) < numberOfSub):
+        soup = downloadRecentPage(username, pageno)
 
-	r = requests.get(URL, params=params)
-	html = json.loads(r.text)['content']
+        for tr in soup.table.tbody.findAll('tr'):
+            tds = tr.findAll('td')
+            data = {}
+            data['subTime'] = tds[0].text
+            data['problemCode'] = tds[1].a['href'].split('/')[-1]
+            data['type'] = tds[2].span['title']
+            data['points'] = tds[2].text
+            data['language'] = tds[3].text
 
-	content = []
+            content.append( data )
 
-	soup = BeautifulSoup(html.strip())
-	for tr in soup.table.tbody.findAll('tr'):
-		tds = tr.findAll('td')
-		
-		data = {}
+        pageno += 1
 
-		data['subTime'] = tds[0].text
-		data['problemCode'] = tds[1].a['href'].split('/')[-1]
-		data['points'] = tds[2].text
-		data['language'] = tds[3].text
-
-		content.append( data )
-
-	print json.dumps(content, indent = 4)
+    #Truncating
+    return content[:numberOfSub]

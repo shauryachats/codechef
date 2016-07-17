@@ -264,6 +264,30 @@ def downloadProblemPage(problemCode):
 
     return BeautifulSoup(web_page.text.encode('utf-8').strip())
 
+#
+#   Downloads the recent submittions page of the user.
+#
+def downloadRecentPage(username, pageno):
+
+    print '[*] Downloading recent page ' + str(pageno) + ' of ' + str(username)
+
+    URL = "https://www.codechef.com/recent/user"
+
+    param = {'page':pageno , 'user_handle':username }
+    web_page = None
+
+    try:
+        web_page = requests.get(URL, params=param)
+    except IOError:
+        raise IOError('Cannot connect to codechef.com')
+
+    data = json.loads(web_page.text)
+
+    if data['max_page'] == 0:
+        raise Exception('No data found.')
+
+    return BeautifulSoup(data['content'].strip())
+
 
 """
     Converts token into camelCase.

@@ -35,4 +35,5 @@ if 'f' in str(sys.argv):
 	codechef.utils.downloadProblemPage('TEST')
 
 if 'g' in str(sys.argv):
-	codechef.user.getRecent('nikhilhassija')
+	g = codechef.user.getRecent('shauryachats',numberOfSub = 30)
+	print json.dumps(g, indent = 4)
