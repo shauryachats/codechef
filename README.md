@@ -2,7 +2,7 @@
 
 Parses "most of the data" from [Codechef](http://www.codechef.com), including the user data, the contest data, and the problem data.
 
-###The API is hosted [here](chefapi-shauryachats.rhcloud.com).
+###The API is hosted [here](http://chefcompare-shauryachats.rhcloud.com/api).
 
 #### Requirements:
 
