@@ -177,7 +177,6 @@ def getRecent(username, numberOfSub = 10):
             data = {}
 
             #TODO: Try to reduce timestamp conversion module.
-
             subTime = tds[0].text
             #Try to parse it as a strptime object.
             try:
@@ -199,6 +198,8 @@ def getRecent(username, numberOfSub = 10):
             data['problemCode'] = tds[1].a['href'].split('/')[-1]
             data['type'] = tds[2].span['title']
             data['points'] = tds[2].text
+            if data['points'] != '':
+                data['type'] = 'accepted'
             data['language'] = tds[3].text
 
             content.append( data )
