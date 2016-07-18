@@ -14,14 +14,15 @@ from collections import OrderedDict
 import json
 import logging
 import re
-
+import datetime
+import time
 
 from utils import *
 from problem import getProblemData
 from contest import getContestList, getContestData
 
 #
-#	Helper function for getUserData() to parse the list of complete and partial problems.
+#   Helper function for getUserData() to parse the list of complete and partial problems.
 #
 def parseProblems(problemsC):
     problemDict = OrderedDict()
@@ -38,8 +39,8 @@ def parseProblems(problemsC):
     return problemDict
 
 """
-	getUserData() does all the dirty work of parsing the HTML and junxing it altogether
-	in a crude 'attributes' dict.
+    getUserData() does all the dirty work of parsing the HTML and junxing it altogether
+    in a crude 'attributes' dict.
 """
 
 # TODO : Try to parse the SVG image of the rating curve, to extract all data about the contest rating at any time.
@@ -91,7 +92,7 @@ def getUserData(username , expiryTime = 0, writeInFile = False):
 
     row = profileTab.table.findNext("table").tr
     #
-    #	Parsing the personal data of the user.
+    #   Parsing the personal data of the user.
     #
     while not row.text.startswith("Problems"):
         # Strip the text of unwanted &nbsp, and splitting via the :
@@ -100,7 +101,7 @@ def getUserData(username , expiryTime = 0, writeInFile = False):
         row = row.findNext("tr")
 
     #
-    #	Removing unwanted keys from attributes (for now)
+    #   Removing unwanted keys from attributes (for now)
     #
     unwantedKeys = ["student/professional", "teamsList", "link", "motto"]
     for key in unwantedKeys:
@@ -110,21 +111,21 @@ def getUserData(username , expiryTime = 0, writeInFile = False):
             pass
 
     #
-    #	Parsing the complete problem list.
+    #   Parsing the complete problem list.
     #
     problemsComplete = row.td.findNext('td').findAll('p')
     completeProblemDict = OrderedDict()
     attributes['completeProblem'] = parseProblems(problemsComplete)
 
     #
-    #	Parsing the partial problem list.
+    #   Parsing the partial problem list.
     #
     problemsPartial = row.findNext('tr').td.findNext('td').findAll('p')
     partialProblemDict = OrderedDict()
     attributes['partialProblem'] = parseProblems(problemsPartial)
 
     #
-    #	Parsing the problem_stats table to get the number of submissions, WA, RTE, and the stuff.
+    #   Parsing the problem_stats table to get the number of submissions, WA, RTE, and the stuff.
     #
     problemStats = soup.find("table", id="problem_stats").tr.findNext('tr').findAll('td')
     problemStats = [item.text for item in problemStats]
@@ -137,7 +138,7 @@ def getUserData(username , expiryTime = 0, writeInFile = False):
     attributes['stats'] = stats
 
     #
-    #	Parsing the rating table to get the current ratings of the user.
+    #   Parsing the rating table to get the current ratings of the user.
     #
     ratingTable = soup.find("table", {'class': "rating-table"}).findAll('tr')[1:4]
     ratingList = {}
@@ -174,7 +175,27 @@ def getRecent(username, numberOfSub = 10):
         for tr in soup.table.tbody.findAll('tr'):
             tds = tr.findAll('td')
             data = {}
-            data['subTime'] = tds[0].text
+
+            #TODO: Try to reduce timestamp conversion module.
+
+            subTime = tds[0].text
+            #Try to parse it as a strptime object.
+            try:
+                a = datetime.datetime.strptime(subTime, "%I:%M %p %d/%m/%y")
+                subTime = int(time.mktime(a.timetuple()))
+            except ValueError:
+                #This was submitted less than 24 hours ago.
+                texts = subTime.split(' ')
+                val = int(texts[0]) #Get the numeric part.
+                if texts[1] == 'min':
+                    val *= 60
+                elif texts[1] == 'hours':
+                    val *= 3600
+                else:
+                    pass
+                subTime = int(time.mktime((datetime.datetime.now().timetuple()))) - val
+            
+            data['subTime'] = subTime
             data['problemCode'] = tds[1].a['href'].split('/')[-1]
             data['type'] = tds[2].span['title']
             data['points'] = tds[2].text
