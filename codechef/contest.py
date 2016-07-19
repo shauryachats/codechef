@@ -51,10 +51,10 @@ def getContestList(findContest = None, expiryTime = 0, writeInFile = False):
             contestData['name'] = tdList[1].text
             a = datetime.datetime.strptime(tdList[2].text, "%Y-%m-%d %H:%M:%S")
             #print a
-            contestData['startTime'] = int(time.mktime(a.timetuple()))
+            contestData['start_time'] = int(time.mktime(a.timetuple()))
             b = datetime.datetime.strptime(tdList[3].text, "%Y-%m-%d %H:%M:%S")
             #print b
-            contestData['endTime'] = int(time.mktime(b.timetuple()))
+            contestData['end_time'] = int(time.mktime(b.timetuple()))
 
             contestList[ contestCode ] = contestData
 
@@ -113,7 +113,7 @@ def getContestDataOld(contestCode, expiryTime = 0, writeInFile = False):
         
         problemList[ problem[1].text ] = tempList 
 
-    attributes['problemList'] = problemList
+    attributes['problemlist'] = problemList
 
     #
     #   Checking if the contest is a Team Contest or not.

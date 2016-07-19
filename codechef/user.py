@@ -85,10 +85,10 @@ def getUserData(username , expiryTime = 0, writeInFile = False):
     attributes['realname'] = profileTab.find('div', {'class' : 'user-name-box'}).text
 
     #The displayPicture link is present in div.user-thumb-pic
-    attributes['displayPicture'] = profileTab.find('div', {'class' : 'user-thumb-pic'}).img['src']
+    attributes['display_picture'] = profileTab.find('div', {'class' : 'user-thumb-pic'}).img['src']
 
-    if (attributes['displayPicture'].startswith('/sites/')):
-        attributes['displayPicture'] = "https://www.codechef.com/" + attributes['displayPicture']    
+    if (attributes['display_picture'].startswith('/sites/')):
+        attributes['display_picture'] = "https://www.codechef.com/" + attributes['displayPicture']    
 
     row = profileTab.table.findNext("table").tr
     #
@@ -97,13 +97,13 @@ def getUserData(username , expiryTime = 0, writeInFile = False):
     while not row.text.startswith("Problems"):
         # Strip the text of unwanted &nbsp, and splitting via the :
         parsedText = row.text.replace("&nbsp;", '').split(':')
-        attributes[ camelCase(parsedText[0]) ] = parsedText[1]
+        attributes[ convertToKey(parsedText[0]) ] = parsedText[1]
         row = row.findNext("tr")
 
     #
     #   Removing unwanted keys from attributes (for now)
     #
-    unwantedKeys = ["student/professional", "teamsList", "link", "motto"]
+    unwantedKeys = ["studentprofessional", "teams_list", "link", "motto"]
     attributes = removeKeys(attributes, unwantedKeys)
 
     #
@@ -111,14 +111,14 @@ def getUserData(username , expiryTime = 0, writeInFile = False):
     #
     problemsComplete = row.td.findNext('td').findAll('p')
     completeProblemDict = OrderedDict()
-    attributes['completeProblem'] = parseProblems(problemsComplete)
+    attributes['complete_problem'] = parseProblems(problemsComplete)
 
     #
     #   Parsing the partial problem list.
     #
     problemsPartial = row.findNext('tr').td.findNext('td').findAll('p')
     partialProblemDict = OrderedDict()
-    attributes['partialProblem'] = parseProblems(problemsPartial)
+    attributes['partial_problem'] = parseProblems(problemsPartial)
 
     #
     #   Parsing the problem_stats table to get the number of submissions, WA, RTE, and the stuff.
@@ -190,8 +190,8 @@ def getRecent(username, numberOfSub = 10):
                     pass
                 subTime = int(time.mktime((datetime.datetime.now().timetuple()))) - val
             
-            data['subTime'] = subTime
-            data['problemCode'] = tds[1].a['href'].split('/')[-1]
+            data['sub_time'] = subTime
+            data['problem_code'] = tds[1].a['href'].split('/')[-1]
             data['type'] = tds[2].span['title']
             data['points'] = tds[2].text
             if data['points'] != '':

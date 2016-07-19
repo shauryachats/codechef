@@ -140,12 +140,11 @@ def downloadRecentPage(username, pageno):
 
 
 """
-    Converts token into camelCase.
+    Converts To ken into to_ken
 """
-def camelCase(token):
-
-    components = token.lower().split(' ')
-    return components[0] + ''.join(x.title() for x in components[1:])
+def convertToKey(token):
+    temp = token.lower().replace(' ', '_')
+    return ''.join(ch for ch in temp if ch.isalnum() or ch == '_')
 
 def removeKeys(attr, keyList):
     
