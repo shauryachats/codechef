@@ -3,27 +3,38 @@ import json
 import datetime
 import time
 from BeautifulSoup import BeautifulSoup
-from collections import OrderedDict
+
+def getContestInList(contestList, present, past, future):
+    bucket = []
+    if future:
+        bucket += contestList['future']
+    if present:
+        bucket += contestList['present']
+    if past:
+        bucket += contestList['past']
+    return bucket
 
 """
     getContestList() parses all the contests from codechef.com/contests
-
     It can also return data of a particular contest, if findContest is not None
-
     It can also return contest list according to Future, Present, or Past contests.
-
 """
-def getContestList(findContest = None, expiryTime = 0, writeInFile = False):
+def getContestList(expiryTime = 0, writeInFile = False, present = False, past = False, future = False):
 
-    contestList = OrderedDict()
+    contestList = {}
 
     if expiryTime > 0:
         contestList = checkInFile('contests', expiryTime)
         if contestList is not None:
-            return contestList
+            return getContestInList(contestList, present, past, future)
         else:
-            contestList = OrderedDict()
+            contestList = {}
 
+    if not present and not past and not future:
+        present = True
+        past = True
+        future = True
+    
     soup = downloadContestList()
 
     tableList = soup.find('div', { 'class' : 'content-wrapper'})
@@ -35,6 +46,15 @@ def getContestList(findContest = None, expiryTime = 0, writeInFile = False):
     #
     for contestType in tableList.findAll('h3'):
 
+        key = None
+        if str(contestType.text).startswith('Present'):
+            key = "present"
+        elif str(contestType.text).startswith('Future'):
+            key = "future"
+        elif str(contestType.text).startswith('Past'):
+            key = "past"
+
+        bucket = []
         #The div containing the contest list is next to the h3 tag.
         for tr in contestType.findNext('div').table.tbody.findAll('tr'):
         
@@ -42,94 +62,29 @@ def getContestList(findContest = None, expiryTime = 0, writeInFile = False):
             #   'tr' contains a row containing the contestcode, contestname, start
             #   and end time of all the contests.
             #
-            contestData = OrderedDict()
+            contestData = {}
             
             tdList = tr.findAll('td')
             
-            contestCode = tdList[0].text
-
+            contestData['code'] = tdList[0].text
             contestData['name'] = tdList[1].text
             a = datetime.datetime.strptime(tdList[2].text, "%Y-%m-%d %H:%M:%S")
-            #print a
             contestData['start_time'] = int(time.mktime(a.timetuple()))
             b = datetime.datetime.strptime(tdList[3].text, "%Y-%m-%d %H:%M:%S")
-            #print b
             contestData['end_time'] = int(time.mktime(b.timetuple()))
 
-            contestList[ contestCode ] = contestData
+            bucket.append(contestData)
 
+        contestList[ key ] = bucket
 
     if writeInFile:
         writeToFile('contests', contestList)
 
-    #
-    #   Looking for the findContest contest.
-    #
-    if (findContest is not None):
-        #Search through contestList for the findContest key and return its data.
-        if findContest in contestList:
-            return contestList[findContest]
-        else:
-            raise Exception('Contest not found in contest list.')
-    else:
-        return contestList
+    return getContestInList(contestList, present, past, future)
         
-
-"""
-    Returns the list of Problem and other data from the contest page.
-"""
-def getContestDataOld(contestCode, expiryTime = 0, writeInFile = False):
-
-    attributes = OrderedDict()
-
-    if expiryTime > 0:
-        attributes = checkInFile('contest/' + contestCode, expiryTime)
-
-        if attributes is not None:
-            return attributes
-        else:
-            attributes = OrderedDict()
-
-    soup = downloadContestPage(contestCode)
-    #soup = downloadPage(contestCode, expiryTime=expiryTime, isContest = True)
-    attributes = getContestList(findContest = contestCode, expiryTime = expiryTime)
-
-
-
-    dataTable = soup.find('table', { 'class' : 'dataTable' } )
-    problemRow = dataTable.findAll('tr', { 'class' : 'problemrow'})
-
-    #
-    #   Parsing the list of problems and the basic stats.
-    #   
-    problemList = {}
-    
-    for problem in problemRow:
-        problem = problem.findAll('td')
-        tempList = {}
-        tempList['name'] = problem[0].text
-        tempList['solved'] = problem[2].text
-        tempList['accuracy'] = problem[3].text
-        
-        problemList[ problem[1].text ] = tempList 
-
-    attributes['problemlist'] = problemList
-
-    #
-    #   Checking if the contest is a Team Contest or not.
-    #   Using the naive assumption that "Team Registration Link" appears only in a team contest.
-    #
-    if (len(soup.body.findAll(text='Team Registration Link')) > 0):
-        attributes['team'] = True
-    else:
-        attributes['team'] = False
-
-    if writeInFile:
-        writeToFile('contest/' + contestCode, attributes)
-
-    return attributes
-
-
+#
+#   Parses contest data using CodeChef's sneaky Internal API.
+#
 def getContestData(contestCode, expiryTime = 0, writeInFile = False):
 
     data = {}

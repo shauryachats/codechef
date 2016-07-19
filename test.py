@@ -21,7 +21,7 @@ if 'b' in str(sys.argv[1]):
 
 #Testing contest.getContestList()
 if 'c' in str(sys.argv[1]):
-	c = codechef.contest.getContestList(expiryTime = 000000, writeInFile = True)
+	c = codechef.contest.getContestList(expiryTime = 000000, writeInFile = True, present = True, future = True)
 	print json.dumps(c, indent = 4)
 
 #Testing problem.getProblemData()

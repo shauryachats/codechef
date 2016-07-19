@@ -88,7 +88,7 @@ def getUserData(username , expiryTime = 0, writeInFile = False):
     attributes['display_picture'] = profileTab.find('div', {'class' : 'user-thumb-pic'}).img['src']
 
     if (attributes['display_picture'].startswith('/sites/')):
-        attributes['display_picture'] = "https://www.codechef.com/" + attributes['displayPicture']    
+        attributes['display_picture'] = "https://www.codechef.com/" + attributes['display_picture']    
 
     row = profileTab.table.findNext("table").tr
     #
