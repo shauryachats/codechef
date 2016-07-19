@@ -104,11 +104,7 @@ def getUserData(username , expiryTime = 0, writeInFile = False):
     #   Removing unwanted keys from attributes (for now)
     #
     unwantedKeys = ["student/professional", "teamsList", "link", "motto"]
-    for key in unwantedKeys:
-        try:
-            attributes.pop(key, None)
-        except KeyError:
-            pass
+    attributes = removeKeys(attributes, unwantedKeys)
 
     #
     #   Parsing the complete problem list.

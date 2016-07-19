@@ -146,3 +146,13 @@ def camelCase(token):
 
     components = token.lower().split(' ')
     return components[0] + ''.join(x.title() for x in components[1:])
+
+def removeKeys(attr, keyList):
+    
+    for key in keyList:
+        try:
+            attr.pop(key, None)
+        except KeyError:
+            pass
+
+    return attr

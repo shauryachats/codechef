@@ -1,5 +1,7 @@
 from utils import *
 import json
+import datetime
+import time
 from BeautifulSoup import BeautifulSoup
 from collections import OrderedDict
 
@@ -17,7 +19,6 @@ def getContestList(findContest = None, expiryTime = 0, writeInFile = False):
 
     if expiryTime > 0:
         contestList = checkInFile('contests', expiryTime)
-
         if contestList is not None:
             return contestList
         else:
@@ -48,8 +49,12 @@ def getContestList(findContest = None, expiryTime = 0, writeInFile = False):
             contestCode = tdList[0].text
 
             contestData['name'] = tdList[1].text
-            contestData['startTime'] = tdList[2].text
-            contestData['endTime'] = tdList[3].text
+            a = datetime.datetime.strptime(tdList[2].text, "%Y-%m-%d %H:%M:%S")
+            #print a
+            contestData['startTime'] = int(time.mktime(a.timetuple()))
+            b = datetime.datetime.strptime(tdList[3].text, "%Y-%m-%d %H:%M:%S")
+            #print b
+            contestData['endTime'] = int(time.mktime(b.timetuple()))
 
             contestList[ contestCode ] = contestData
 
@@ -73,7 +78,7 @@ def getContestList(findContest = None, expiryTime = 0, writeInFile = False):
 """
     Returns the list of Problem and other data from the contest page.
 """
-def getContestData(contestCode, expiryTime = 0, writeInFile = False):
+def getContestDataOld(contestCode, expiryTime = 0, writeInFile = False):
 
     attributes = OrderedDict()
 
@@ -123,3 +128,36 @@ def getContestData(contestCode, expiryTime = 0, writeInFile = False):
         writeToFile('contest/' + contestCode, attributes)
 
     return attributes
+
+
+def getContestData(contestCode, expiryTime = 0, writeInFile = False):
+
+    data = {}
+
+    if expiryTime > 0:
+        data = checkInFile('contest/' + contestCode, expiryTime)
+        if data is not None:
+            return data
+        else:
+            data = {}
+
+    URL = "https://www.codechef.com/api/contests/" + contestCode
+
+    data = json.loads(requests.get(URL).text)
+
+    #Make start_time and end_time keys directly in data
+    data['start_time'] = data['time']['start']
+    data['end_time'] = data['time']['end']
+
+    #Removing unnecessary keys.
+    keysToRemove = ['problems_data','time','problemsstats', 'user', 'announcements', 'rules', 'autoRefresh', 'banner', 'todos']
+    data = removeKeys(data, keysToRemove)
+
+    #From here too.
+    for contest in data['problems']:
+        data['problems'][contest] = removeKeys(data['problems'][contest], ['status_url','submit_url','problem_url','allow_submission'])
+
+    if writeInFile:
+        writeToFile('contest/' + contestCode, data)
+
+    return data

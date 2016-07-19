@@ -16,12 +16,12 @@ if 'a' in str(sys.argv[1]):
 
 #Testing contest.getContestData()
 if 'b' in str(sys.argv[1]):
-	b = codechef.contest.getContestData('JULY16', expiryTime = 0, writeInFile = True)
+	b = codechef.contest.getContestData('IOIPRAC', expiryTime = 0, writeInFile = True)
 	print json.dumps(b, indent = 4)
 
 #Testing contest.getContestList()
 if 'c' in str(sys.argv[1]):
-	c = codechef.contest.getContestList(expiryTime = 0, writeInFile = True)
+	c = codechef.contest.getContestList(expiryTime = 000000, writeInFile = True)
 	print json.dumps(c, indent = 4)
 
 #Testing problem.getProblemData()
@@ -33,3 +33,4 @@ if 'd' in str(sys.argv[1]):
 if 'e' in str(sys.argv[1]):
 	e = codechef.user.getRecent('shauryachats')
 	print json.dumps(e, indent = 4)
+
