@@ -38,3 +38,8 @@ if 'e' in str(sys.argv[1]):
 if 'f' in str(sys.argv[1]):
 	f = codechef.user.getAllProblems('shauryachats', expiryTime = 10000, writeInFile = True, completeProblems = True)
 	print f
+
+#Testing user.getAllContests()
+if 'g' in str(sys.argv[1]):
+	g = codechef.user.getAllContests('anta0', expiryTime = 10000, writeInFile = True)
+	print g

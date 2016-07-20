@@ -223,3 +223,18 @@ def getAllProblems(username, expiryTime = 0, writeInFile = False, completeProble
         bucket += [problem for contest in userdata['partial_problem'] for problem in userdata['partial_problem'][contest]]
 
     return bucket    
+
+#
+#   Returns all the contests (complete/partial) attempted by the user, in a list.
+#
+def getAllContests(username, expiryTime = 0, writeInFile = False):
+
+    userdata = getUserData(username, expiryTime, writeInFile)
+
+    bucket = set() #Since some contest might have partially solved and completely solved problems.
+    for contest in userdata['complete_problem']:
+        bucket.add(contest)
+    for contest in userdata['partial_problem']:
+        bucket.add(contest)
+
+    return list(bucket)
