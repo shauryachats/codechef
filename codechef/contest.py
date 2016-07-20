@@ -19,7 +19,9 @@ def getContestInList(contestList, present, past, future):
     It can also return data of a particular contest, if findContest is not None
     It can also return contest list according to Future, Present, or Past contests.
 """
-def getContestList(expiryTime = 0, writeInFile = False, present = False, past = False, future = False):
+def getContestList(expiryTime = None, writeInFile = None, present = False, past = False, future = False):
+
+    expiryTime, writeInFile = getGlobals(expiryTime, writeInFile)
 
     contestList = {}
 
@@ -85,7 +87,9 @@ def getContestList(expiryTime = 0, writeInFile = False, present = False, past = 
 #
 #   Parses contest data using CodeChef's sneaky Internal API.
 #
-def getContestData(contestCode, expiryTime = 0, writeInFile = False):
+def getContestData(contestCode, expiryTime = None, writeInFile = None):
+
+    expiryTime, writeInFile = getGlobals(expiryTime, writeInFile)
 
     data = {}
 

@@ -8,7 +8,10 @@ from utils import *
 
     If problemBody is True, returns the body in HTML.
 """
-def getProblemData(problemCode, expiryTime = 0, writeInFile = True, problemBody = False):
+def getProblemData(problemCode, expiryTime = None, writeInFile = None, problemBody = False):
+
+    expiryTime, writeInFile = getGlobals(expiryTime, writeInFile)
+    #print expiryTime, writeInFile
 
     attributes = {}
 

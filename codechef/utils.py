@@ -6,6 +6,8 @@ import zlib
 from collections import OrderedDict
 from BeautifulSoup import BeautifulSoup
 
+import globals
+
 #
 #   Creates the directories to initialise.
 #
@@ -139,13 +141,16 @@ def downloadRecentPage(username, pageno):
     return BeautifulSoup(data['content'].strip())
 
 
-"""
-    Converts To ken into to_ken
-"""
+#
+#   Converts To ken into to_ken
+#
 def convertToKey(token):
     temp = token.lower().replace(' ', '_')
     return ''.join(ch for ch in temp if ch.isalnum() or ch == '_')
 
+#
+#   Utility to remove a list of keys from a dictionary.
+#
 def removeKeys(attr, keyList):
     
     for key in keyList:
@@ -155,3 +160,14 @@ def removeKeys(attr, keyList):
             pass
 
     return attr
+
+#
+#   Assigns the value of globals
+#
+def getGlobals(expiryTime, writeInFile):
+    if expiryTime is None:
+        expiryTime = globals.EXPIRY_TIME
+    if writeInFile is None:
+        writeInFile = globals.WRITE_IN_FILE
+
+    return expiryTime, writeInFile

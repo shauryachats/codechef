@@ -18,8 +18,11 @@ import datetime
 import time
 
 from utils import *
+import globals
 from problem import getProblemData
 from contest import getContestList, getContestData
+
+
 
 #
 #   Helper function for getUserData() to parse the list of complete and partial problems.
@@ -46,7 +49,10 @@ def parseProblems(problemsC):
 # TODO : Try to parse the SVG image of the rating curve, to extract all data about the contest rating at any time.
 # REFACTOR : Split all the parsing methods into seperate, for easy debugging.
 
-def getUserData(username , expiryTime = 0, writeInFile = False):
+def getUserData(username , expiryTime = None, writeInFile = None):
+
+    #Fetching global variables from globals.py
+    expiryTime, writeInFile = getGlobals(expiryTime, writeInFile)
 
     # Dictionary returning all the scraped data from the HTML.    
     attributes = OrderedDict()
@@ -125,12 +131,14 @@ def getUserData(username , expiryTime = 0, writeInFile = False):
     #
     problemStats = soup.find("table", id="problem_stats").tr.findNext('tr').findAll('td')
     problemStats = [item.text for item in problemStats]
-    print problemStats
+
+    #
+    #   Parsing the problem submission statistics.
+    #
     stats = {}
     keys = ['pc', 'pp', 'ps', 'acp', 'acc', 'wa', 'cte', 'rte', 'tle']
     for i in xrange(0, len(problemStats)):
         stats[keys[i]] = int(problemStats[i])
-    # print stats
     attributes['stats'] = stats
 
     #
@@ -208,7 +216,7 @@ def getRecent(username, numberOfSub = 10):
 #
 #   Returns all the problems (complete/partial) solved by the username, in a list.
 #
-def getAllProblems(username, expiryTime = 0, writeInFile = False, completeProblems = False, partialProblems = False):
+def getAllProblems(username, expiryTime = None, writeInFile = None, completeProblems = False, partialProblems = False):
 
     if not completeProblems and not partialProblems:
         completeProblems = True
@@ -227,7 +235,7 @@ def getAllProblems(username, expiryTime = 0, writeInFile = False, completeProble
 #
 #   Returns all the contests (complete/partial) attempted by the user, in a list.
 #
-def getAllContests(username, expiryTime = 0, writeInFile = False):
+def getAllContests(username, expiryTime = None, writeInFile = None):
 
     userdata = getUserData(username, expiryTime, writeInFile)
 
