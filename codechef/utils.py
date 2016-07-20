@@ -69,7 +69,7 @@ def downloadUserPage(username):
     web_page = None
 
     try:
-        web_page = requests.get(URL)
+        web_page = requests.get(URL,headers={'User-Agent': 'Mozilla/5.0'})
     except IOError:
         raise IOError('Cannot connect to codechef.com')
 
@@ -93,7 +93,7 @@ def downloadContestList():
     web_page = None
 
     try:
-        web_page = requests.get(URL)
+        web_page = requests.get(URL,headers={'User-Agent': 'Mozilla/5.0'})
     except IOError:
         raise IOError('Cannot connect to codechef.com')
 
@@ -108,7 +108,7 @@ def downloadContestPage(contestCode):
 
     web_page = None
     try:
-        web_page = requests.get(URL)
+        web_page = requests.get(URL,headers={'User-Agent': 'Mozilla/5.0'})
     except IOError:
         raise IOError('Cannot connect to codechef.com')
 
@@ -129,7 +129,7 @@ def downloadRecentPage(username, pageno):
     web_page = None
 
     try:
-        web_page = requests.get(URL, params=param)
+        web_page = requests.get(URL,headers={'User-Agent': 'Mozilla/5.0'}, params=param)
     except IOError:
         raise IOError('Cannot connect to codechef.com')
 

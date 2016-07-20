@@ -24,7 +24,7 @@ def getProblemData(problemCode, expiryTime = None, writeInFile = None, problemBo
 
     URL = 'https://www.codechef.com/api/contests/PRACTICE/problems/'
     
-    attributes = json.loads(requests.get(URL + problemCode).text)
+    attributes = json.loads(requests.get(URL + problemCode, headers={'User-Agent': 'Mozilla/5.0'}).text)
     attributes['problem_code'] = problemCode    
 
     if attributes['status'] == 'error':

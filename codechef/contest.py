@@ -102,7 +102,7 @@ def getContestData(contestCode, expiryTime = None, writeInFile = None):
 
     URL = "https://www.codechef.com/api/contests/" + contestCode
 
-    data = json.loads(requests.get(URL).text)
+    data = json.loads(requests.get(URL, headers={'User-Agent': 'Mozilla/5.0'}).text)
 
     #Make start_time and end_time keys directly in data
     data['start_time'] = data['time']['start']
