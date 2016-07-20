@@ -3,6 +3,7 @@ import json
 import datetime
 import time
 from BeautifulSoup import BeautifulSoup
+import logging
 
 def getContestInList(contestList, present, past, future):
     bucket = []
@@ -21,6 +22,7 @@ def getContestInList(contestList, present, past, future):
 """
 def getContestList(expiryTime = None, writeInFile = None, present = False, past = False, future = False):
 
+    logging.debug("In getContestList()")
     expiryTime, writeInFile = getGlobals(expiryTime, writeInFile)
 
     contestList = {}
@@ -82,6 +84,7 @@ def getContestList(expiryTime = None, writeInFile = None, present = False, past 
     if writeInFile:
         writeToFile('contests', contestList)
 
+    logging.debug("getContestList() = " + json.dumps(getContestInList(contestList, present, past, future), indent = 4))
     return getContestInList(contestList, present, past, future)
         
 #
@@ -89,6 +92,7 @@ def getContestList(expiryTime = None, writeInFile = None, present = False, past 
 #
 def getContestData(contestCode, expiryTime = None, writeInFile = None):
 
+    logging.debug("In getContestData("+contestCode+')')
     expiryTime, writeInFile = getGlobals(expiryTime, writeInFile)
 
     data = {}
@@ -119,4 +123,5 @@ def getContestData(contestCode, expiryTime = None, writeInFile = None):
     if writeInFile:
         writeToFile('contest/' + contestCode, data)
 
+    logging.debug("getContestData() = " + json.dumps(data, indent = 4))
     return data

@@ -51,6 +51,7 @@ def parseProblems(problemsC):
 
 def getUserData(username , expiryTime = None, writeInFile = None):
 
+    logging.debug("In getUserData(" + username + ')')
     #Fetching global variables from globals.py
     expiryTime, writeInFile = getGlobals(expiryTime, writeInFile)
 
@@ -163,6 +164,7 @@ def getUserData(username , expiryTime = None, writeInFile = None):
         print '[*] Writing object to ' + username + '.cjson'
         writeToFile('users/' + username, attributes)
 
+    logging.debug("getUserData returned " + json.dumps(attributes, indent = 4))
     return attributes
 
 #
@@ -170,6 +172,7 @@ def getUserData(username , expiryTime = None, writeInFile = None):
 #
 def getRecent(username, numberOfSub = 10):
 
+    logging.debug("In getRecent(" + username + ')')
     content = [] 
     pageno = 0
 
@@ -210,13 +213,16 @@ def getRecent(username, numberOfSub = 10):
 
         pageno += 1
 
-    #Truncating
+    #Truncating0
+    logging.debug("getUserData = " + json.dumps(content[:numberOfSub], indent = 4))
     return content[:numberOfSub]
 
 #
 #   Returns all the problems (complete/partial) solved by the username, in a list.
 #
 def getAllProblems(username, expiryTime = None, writeInFile = None, completeProblems = False, partialProblems = False):
+
+    logging.debug("In getAllProblems(" + username + ")")
 
     if not completeProblems and not partialProblems:
         completeProblems = True
@@ -230,6 +236,7 @@ def getAllProblems(username, expiryTime = None, writeInFile = None, completeProb
     if partialProblems:
         bucket += [problem for contest in userdata['partial_problem'] for problem in userdata['partial_problem'][contest]]
 
+    logging.debug("getAllProblems() = " + json.dumps(bucket, indent = 4))
     return bucket    
 
 #
@@ -237,6 +244,7 @@ def getAllProblems(username, expiryTime = None, writeInFile = None, completeProb
 #
 def getAllContests(username, expiryTime = None, writeInFile = None):
 
+    logging.debug("In getAllContests(" + username + ")")
     userdata = getUserData(username, expiryTime, writeInFile)
 
     bucket = set() #Since some contest might have partially solved and completely solved problems.
@@ -245,4 +253,5 @@ def getAllContests(username, expiryTime = None, writeInFile = None):
     for contest in userdata['partial_problem']:
         bucket.add(contest)
 
+    logging.debug("getAllContest() = " + str(bucket))
     return list(bucket)

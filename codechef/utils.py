@@ -5,6 +5,7 @@ import json
 import zlib
 from collections import OrderedDict
 from BeautifulSoup import BeautifulSoup
+import logging
 
 import globals
 
@@ -29,9 +30,11 @@ def makeAllDirs():
 
 def checkInFile(fileName, expiryTime):
 
+    logging.debug("In checkInFile("+fileName+')')
     FILE_PATH = '.codechef/' + fileName + '.cjson'
     #Checking for the existance of the file.
     if not os.path.exists(FILE_PATH):
+        logging.info(fileName + "not found!")
         print '[!] ' + fileName + ' not present.'
         return None
 
@@ -39,8 +42,10 @@ def checkInFile(fileName, expiryTime):
     downloadedTime = datetime.datetime.fromtimestamp(os.path.getmtime(FILE_PATH))
     timeDifference = datetime.datetime.now() - downloadedTime
     if (int(timeDifference.seconds) > expiryTime):
+        logging.info("File expired.")
         return None
 
+    logging.info("Reading " + fileName)
     #If the file is in the expiryTime limit, return the python object.
     with open(FILE_PATH, 'rb') as alp:
         return OrderedDict(json.loads(zlib.decompress(alp.read())))
@@ -51,6 +56,7 @@ def checkInFile(fileName, expiryTime):
 def writeToFile(fileName, attributes):
 
     #   Make all the required directories.
+    logging.info("Writing to " + fileName)   
     makeAllDirs()
 
     FILE_PATH = '.codechef/' + fileName + '.cjson'
@@ -64,7 +70,7 @@ def writeToFile(fileName, attributes):
 """
 def downloadUserPage(username):
 
-    print '[*] Downloading user ' + username
+    logging.info("In downloadUserPage(%s)" % (username))
     URL = "https://www.codechef.com/users/" + username
     web_page = None
 
@@ -89,6 +95,7 @@ def downloadUserPage(username):
 
 def downloadContestList():
 
+    logging.info("In downloadContestList()")
     URL = "https://www.codechef.com/contests"
     web_page = None
 
@@ -123,6 +130,7 @@ def downloadContestPage(contestCode):
 def downloadRecentPage(username, pageno):
 
     print '[*] Downloading recent page ' + str(pageno) + ' of ' + str(username)
+    logging.info("Downloading recent page %d of %s", pageno, username )
     URL = "https://www.codechef.com/recent/user"
 
     param = {'page':pageno , 'user_handle':username }
@@ -165,6 +173,7 @@ def removeKeys(attr, keyList):
 #   Assigns the value of globals
 #
 def getGlobals(expiryTime, writeInFile):
+
     if expiryTime is None:
         expiryTime = globals.EXPIRY_TIME
     if writeInFile is None:

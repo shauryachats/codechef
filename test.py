@@ -7,8 +7,11 @@ import codechef.utils
 import codechef.globals
 import json
 import sys
+import logging
 
 print str(sys.argv)
+
+logging.basicConfig(filename = 'log.txt',level=logging.DEBUG)
 
 #Testing globals variables.
 codechef.globals.EXPIRY_TIME = 200000

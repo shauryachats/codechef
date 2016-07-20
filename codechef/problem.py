@@ -2,6 +2,7 @@ from BeautifulSoup import BeautifulSoup
 import re
 import json
 from utils import *
+import logging
 
 """
     Scraps data from CodeChef's sneaky API ( which it runs on AJAX, I just happened to scan XHR requests :P)
@@ -10,6 +11,7 @@ from utils import *
 """
 def getProblemData(problemCode, expiryTime = None, writeInFile = None, problemBody = False):
 
+    logging.debug("In getProblemData("+problemCode+")")
     expiryTime, writeInFile = getGlobals(expiryTime, writeInFile)
     #print expiryTime, writeInFile
 
@@ -39,6 +41,7 @@ def getProblemData(problemCode, expiryTime = None, writeInFile = None, problemBo
     if writeInFile:
         writeToFile('problems/' + problemCode, attributes)    
 
+    logging.debug("getProblemData() = " + json.dumps(attributes, indent = 4))
     return attributes
 
 """
