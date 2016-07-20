@@ -204,3 +204,22 @@ def getRecent(username, numberOfSub = 10):
 
     #Truncating
     return content[:numberOfSub]
+
+#
+#   Returns all the problems (complete/partial) solved by the username, in a list.
+#
+def getAllProblems(username, expiryTime = 0, writeInFile = False, completeProblems = False, partialProblems = False):
+
+    if not completeProblems and not partialProblems:
+        completeProblems = True
+        partialProblems = True
+
+    userdata = getUserData(username, expiryTime, writeInFile)
+
+    bucket = []
+    if completeProblems:
+        bucket += [problem for contest in userdata['complete_problem'] for problem in userdata['complete_problem'][contest]]
+    if partialProblems:
+        bucket += [problem for contest in userdata['partial_problem'] for problem in userdata['partial_problem'][contest]]
+
+    return bucket    

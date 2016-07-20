@@ -34,3 +34,7 @@ if 'e' in str(sys.argv[1]):
 	e = codechef.user.getRecent('shauryachats')
 	print json.dumps(e, indent = 4)
 
+#Testing user.getAllProblems()
+if 'f' in str(sys.argv[1]):
+	f = codechef.user.getAllProblems('shauryachats', expiryTime = 10000, writeInFile = True, completeProblems = True)
+	print f
